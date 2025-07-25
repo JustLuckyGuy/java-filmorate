@@ -7,14 +7,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.Duration;
 import java.time.LocalDate;
 
+import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -37,7 +38,7 @@ class FilmorateApplicationTests {
                 .name("Убить билла")
                 .description("Фильм про месть")
                 .releaseDate(LocalDate.of(2003, 2, 4))
-                .duration(Duration.ofMinutes(111))
+                .duration(111L)
                 .build();
 
         user = User.builder()
@@ -45,6 +46,11 @@ class FilmorateApplicationTests {
                 .login("today")
                 .birthday(LocalDate.now())
                 .build();
+    }
+
+    @Test
+    void contextLoad(ApplicationContext app) {
+        assertNotNull(app);
     }
 
     @Test
@@ -85,7 +91,7 @@ class FilmorateApplicationTests {
 
     @Test
     void createFilmShouldReturn400StatusWhenDurationIsNegative() throws Exception {
-        film.setDuration(Duration.ofMinutes(-100));
+        film.setDuration(-1L);
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(film)))
@@ -94,7 +100,7 @@ class FilmorateApplicationTests {
 
     @Test
     void createFilmShouldReturn400StatusWhenDurationEqualsZero() throws Exception {
-        film.setDuration(Duration.ZERO);
+        film.setDuration(0L);
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(film)))
@@ -154,5 +160,6 @@ class FilmorateApplicationTests {
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isBadRequest());
     }
+
 
 }

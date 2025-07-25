@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -14,8 +13,9 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
+@Slf4j
 public class UserController {
-    private final Logger log = LoggerFactory.getLogger(UserController.class);
+    private long id = 1;
 
     private final Map<Long, User> users = new HashMap<>();
 
@@ -27,7 +27,8 @@ public class UserController {
     @PostMapping
     public User create(@RequestBody @Validated User user) {
         if (user.getName() == null) user.setName(user.getLogin());
-        user.setId(getNextId());
+        user.setId(id);
+        id++;
         users.put(user.getId(), user);
         log.info("Пользователь {} создан", user.getLogin());
         return user;
@@ -53,12 +54,4 @@ public class UserController {
         throw new NotFoundException("Пользователь с id = " + user.getId() + " не найден");
     }
 
-
-    private long getNextId() {
-        long currentMaxId = users.keySet().stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
-    }
 }
