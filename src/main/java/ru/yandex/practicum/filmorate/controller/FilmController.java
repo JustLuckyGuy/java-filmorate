@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ParameterNotValidException;
@@ -11,7 +12,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import java.util.Collection;
 import java.util.List;
 
-
+@Slf4j
 @RestController
 @RequestMapping("/films")
 @RequiredArgsConstructor
@@ -26,6 +27,10 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
+        if(count<=0){
+            log.error("count не должно быть отрицательным");
+            throw new ParameterNotValidException("Ошибка с вводом числа count");
+        }
         return filmService.getPopularFilm(count);
     }
 
@@ -43,7 +48,11 @@ public class FilmController {
     public Film setLike(@PathVariable Long filmId,
                         @PathVariable Long userId) {
         if (filmId == null || userId == null) {
+            log.error("Поставить лайк: Не введен id одного из полей");
             throw new ParameterNotValidException("Проверьте правильность ввода id фильма или id пользователя");
+        } else if (filmId <=0 || userId <=0) {
+            log.error("Поставить лайк: id не может быть отрицательным");
+            throw new ParameterNotValidException("Не верно указан id пользователя или id фильма");
         }
         return filmService.setLike(filmId, userId);
     }
@@ -52,7 +61,11 @@ public class FilmController {
     public Film removeLike(@PathVariable Long filmId,
                            @PathVariable Long userId) {
         if (filmId == null || userId == null) {
+            log.error("Удалить лайк: Не введен id одного из полей");
             throw new ParameterNotValidException("Проверьте правильность ввода id фильма или id пользователя");
+        }  else if (filmId <=0 || userId <=0) {
+            log.error("Удалить лайк: id не может быть отрицательным");
+            throw new ParameterNotValidException("Не верно указан id пользователя или id фильма");
         }
         return filmService.removeLike(filmId, userId);
     }
