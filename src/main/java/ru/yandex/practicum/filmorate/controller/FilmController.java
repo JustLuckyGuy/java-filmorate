@@ -27,7 +27,7 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
-        if(count<=0){
+        if (count <= 0) {
             log.error("count не должно быть отрицательным");
             throw new ParameterNotValidException("Ошибка с вводом числа count");
         }
@@ -50,7 +50,7 @@ public class FilmController {
         if (filmId == null || userId == null) {
             log.error("Поставить лайк: Не введен id одного из полей");
             throw new ParameterNotValidException("Проверьте правильность ввода id фильма или id пользователя");
-        } else if (filmId <=0 || userId <=0) {
+        } else if (filmId <= 0 || userId <= 0) {
             log.error("Поставить лайк: id не может быть отрицательным");
             throw new ParameterNotValidException("Не верно указан id пользователя или id фильма");
         }
@@ -63,7 +63,7 @@ public class FilmController {
         if (filmId == null || userId == null) {
             log.error("Удалить лайк: Не введен id одного из полей");
             throw new ParameterNotValidException("Проверьте правильность ввода id фильма или id пользователя");
-        }  else if (filmId <=0 || userId <=0) {
+        } else if (filmId <= 0 || userId <= 0) {
             log.error("Удалить лайк: id не может быть отрицательным");
             throw new ParameterNotValidException("Не верно указан id пользователя или id фильма");
         }

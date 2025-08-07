@@ -29,7 +29,7 @@ public class UserController {
         if (id == null) {
             log.error("Необходимо указать id");
             throw new ParameterNotValidException("Не указан id");
-        } else if (id<=0) {
+        } else if (id <= 0) {
             log.error("Id не должно быть отрицательным");
             throw new ParameterNotValidException("Не верно указан id");
         }
@@ -44,7 +44,7 @@ public class UserController {
         if (id == null || otherId == null) {
             log.error("Не введен id для одного из полей");
             throw new ParameterNotValidException("Проверьте правильность ввода id пользователей и id второго пользователя");
-        } else if (id<=0 || otherId<=0) {
+        } else if (id <= 0 || otherId <= 0) {
             log.error("Id отрицательное, а должно быть положительным");
             throw new ParameterNotValidException("Не верно указан id одного из пользователей");
         }
@@ -68,7 +68,7 @@ public class UserController {
         if (id == null || idFriend == null) {
             log.error("Добавить в друзья: не введен один из полей id");
             throw new ParameterNotValidException("Проверьте правильность ввода id пользователей и id друга");
-        } else if (id<=0 || idFriend<=0) {
+        } else if (id <= 0 || idFriend <= 0) {
             log.error("Добавить в друзья: ID не должен быть отрицательным");
             throw new ParameterNotValidException("Не верно указан id пользователя или id друга");
         }
@@ -82,7 +82,7 @@ public class UserController {
         if (id == null || idFriend == null) {
             log.error("Удаление из друзья: не введен один из полей id");
             throw new ParameterNotValidException("Проверьте правильность ввода id пользователей");
-        } else if (id<=0 || idFriend<=0) {
+        } else if (id <= 0 || idFriend <= 0) {
             log.error("Удаление из друзья: ID не должен быть отрицательным");
             throw new ParameterNotValidException("Не верно указан id пользователя или id друга");
         }
