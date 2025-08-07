@@ -8,10 +8,13 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.model.annotations.AfterMinDay;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Builder
 @Data
 public class Film {
+    @Min(1)
     private Long id;
     @NotBlank(message = "Поле должно быть заполнено")
     private String name;
@@ -21,4 +24,5 @@ public class Film {
     private LocalDate releaseDate;
     @Min(1)
     private Long duration;
+    private final Set<Long> likes = new HashSet<>();
 }
