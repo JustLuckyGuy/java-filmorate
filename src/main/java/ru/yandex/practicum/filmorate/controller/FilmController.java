@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ParameterNotValidException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,31 +16,27 @@ import java.util.List;
 @RequestMapping("/films")
 @RequiredArgsConstructor
 public class FilmController {
-    private final FilmStorage filmStorage;
     private final FilmService filmService;
 
     @GetMapping
     public Collection<Film> allFilms() {
-        return filmStorage.allFilms();
+        return filmService.getAllFilms();
     }
 
     @GetMapping("/popular")
     public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
-        if (count <= 0) {
-            log.error("count не должно быть отрицательным");
-            throw new ParameterNotValidException("Ошибка с вводом числа count");
-        }
+
         return filmService.getPopularFilm(count);
     }
 
     @PostMapping
     public Film create(@RequestBody @Validated Film film) {
-        return filmStorage.create(film);
+        return filmService.createFilm(film);
     }
 
     @PutMapping
     public Film update(@RequestBody @Validated Film film) {
-        return filmStorage.update(film);
+        return filmService.updateFilm(film);
     }
 
     @PutMapping("/{filmId}/like/{userId}")
@@ -50,9 +45,6 @@ public class FilmController {
         if (filmId == null || userId == null) {
             log.error("Поставить лайк: Не введен id одного из полей");
             throw new ParameterNotValidException("Проверьте правильность ввода id фильма или id пользователя");
-        } else if (filmId <= 0 || userId <= 0) {
-            log.error("Поставить лайк: id не может быть отрицательным");
-            throw new ParameterNotValidException("Не верно указан id пользователя или id фильма");
         }
         return filmService.setLike(filmId, userId);
     }
@@ -63,9 +55,6 @@ public class FilmController {
         if (filmId == null || userId == null) {
             log.error("Удалить лайк: Не введен id одного из полей");
             throw new ParameterNotValidException("Проверьте правильность ввода id фильма или id пользователя");
-        } else if (filmId <= 0 || userId <= 0) {
-            log.error("Удалить лайк: id не может быть отрицательным");
-            throw new ParameterNotValidException("Не верно указан id пользователя или id фильма");
         }
         return filmService.removeLike(filmId, userId);
     }
