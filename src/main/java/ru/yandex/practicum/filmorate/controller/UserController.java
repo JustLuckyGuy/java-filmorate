@@ -1,10 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ParameterNotValidException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -23,23 +24,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> userFriends(@PathVariable Long id) {
-        if (id == null) {
-            log.error("Необходимо указать id");
-            throw new ParameterNotValidException("Не указан id");
-        }
+    public Collection<User> userFriends(@PathVariable @NotNull @Positive Long id) {
         return userService.showAllFriend(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public Collection<User> similarFriends(
-            @PathVariable Long id,
-            @PathVariable Long otherId) {
-        if (id == null || otherId == null) {
-            log.error("Не введен id для одного из полей");
-            throw new ParameterNotValidException("Проверьте правильность ввода id пользователей и id второго пользователя");
-        }
-
+            @PathVariable @NotNull @Positive Long id,
+            @PathVariable @NotNull @Positive Long otherId) {
         return userService.similarFriends(id, otherId);
     }
 
@@ -54,23 +46,14 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{idFriend}")
-    public User addFriend(@PathVariable Long id,
-                          @PathVariable Long idFriend) {
-        if (id == null || idFriend == null) {
-            log.error("Добавить в друзья: не введен один из полей id");
-            throw new ParameterNotValidException("Проверьте правильность ввода id пользователей и id друга");
-        }
+    public User addFriend(@PathVariable @NotNull @Positive Long id,
+                          @PathVariable @NotNull @Positive Long idFriend) {
         return userService.addFriend(id, idFriend);
     }
 
     @DeleteMapping("/{id}/friends/{idFriend}")
-    public User removeFriend(@PathVariable Long id,
-                             @PathVariable Long idFriend) {
-        if (id == null || idFriend == null) {
-            log.error("Удаление из друзья: не введен один из полей id");
-            throw new ParameterNotValidException("Проверьте правильность ввода id пользователей");
-        }
-
+    public User removeFriend(@PathVariable @NotNull @Positive Long id,
+                             @PathVariable @NotNull @Positive Long idFriend) {
         return userService.removeFriend(id, idFriend);
     }
 

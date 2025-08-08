@@ -1,10 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ParameterNotValidException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -24,8 +25,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
-
+    public List<Film> getPopular(@RequestParam(defaultValue = "10") @Positive int count) {
         return filmService.getPopularFilm(count);
     }
 
@@ -40,22 +40,15 @@ public class FilmController {
     }
 
     @PutMapping("/{filmId}/like/{userId}")
-    public Film setLike(@PathVariable Long filmId,
-                        @PathVariable Long userId) {
-        if (filmId == null || userId == null) {
-            log.error("Поставить лайк: Не введен id одного из полей");
-            throw new ParameterNotValidException("Проверьте правильность ввода id фильма или id пользователя");
-        }
+    public Film setLike(@PathVariable @NotNull @Positive Long filmId,
+                        @PathVariable @NotNull @Positive Long userId) {
+
         return filmService.setLike(filmId, userId);
     }
 
     @DeleteMapping("/{filmId}/like/{userId}")
-    public Film removeLike(@PathVariable Long filmId,
-                           @PathVariable Long userId) {
-        if (filmId == null || userId == null) {
-            log.error("Удалить лайк: Не введен id одного из полей");
-            throw new ParameterNotValidException("Проверьте правильность ввода id фильма или id пользователя");
-        }
+    public Film removeLike(@PathVariable @NotNull @Positive Long filmId,
+                           @PathVariable @NotNull @Positive Long userId) {
         return filmService.removeLike(filmId, userId);
     }
 
