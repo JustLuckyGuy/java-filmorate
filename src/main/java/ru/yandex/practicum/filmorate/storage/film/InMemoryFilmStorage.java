@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -27,8 +28,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> findById(Long id) {
+    public Optional<Film> findById(long id) {
         return Optional.ofNullable(filmCollection.get(id));
+    }
+
+    @Override
+    public boolean delete(long id) {
+        return false;
     }
 
     @Override

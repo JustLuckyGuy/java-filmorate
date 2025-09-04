@@ -43,25 +43,25 @@ class FilmorateApplicationTests {
     private Film film;
     private User user;
 
-    @BeforeEach
-    void setUp() {
-        film = Film.builder()
-                .id(1L)
-                .name("Убить билла")
-                .description("Фильм про месть")
-                .releaseDate(LocalDate.of(2003, 2, 4))
-                .duration(111L)
-                .build();
-
-        user = User.builder()
-                .id(1L)
-                .email("today@mail.ru")
-                .login("today")
-                .birthday(LocalDate.now())
-                .build();
-        userService.createUser(user);
-        filmService.createFilm(film);
-    }
+//    @BeforeEach
+//    void setUp() {
+//        film = Film.builder()
+//                .id(1L)
+//                .name("Убить билла")
+//                .description("Фильм про месть")
+//                .releaseDate(LocalDate.of(2003, 2, 4))
+//                .duration(111L)
+//                .build();
+//
+//        user = User.builder()
+//                .id(1L)
+//                .email("today@mail.ru")
+//                .login("today")
+//                .birthday(LocalDate.now())
+//                .build();
+//        userService.createUser(user);
+//        filmService.createFilm(film);
+//    }
 
     @Test
     void contextLoad(ApplicationContext app) {
