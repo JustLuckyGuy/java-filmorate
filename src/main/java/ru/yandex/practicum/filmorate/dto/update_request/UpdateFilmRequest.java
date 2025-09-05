@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.dto.update_request;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -13,6 +15,9 @@ import java.util.Set;
 
 @Data
 public class UpdateFilmRequest {
+    @NotNull
+    @Positive
+    private Long id;
     private String name;
     @Size(max = 200, message = "Превышен лимит символов")
     private String description;
@@ -24,11 +29,11 @@ public class UpdateFilmRequest {
     private final MPA mpa;
 
     public boolean hasName() {
-        return ! (name == null || name.isBlank());
+        return !(name == null || name.isBlank());
     }
 
     public boolean hasDescription() {
-        return ! (description == null || description.isBlank());
+        return !(description == null || description.isBlank());
     }
 
     public boolean hasReleaseDate() {
@@ -43,7 +48,7 @@ public class UpdateFilmRequest {
         return mpa != null;
     }
 
-    public boolean hasGenres(){
+    public boolean hasGenres() {
         return !genres.isEmpty();
     }
 

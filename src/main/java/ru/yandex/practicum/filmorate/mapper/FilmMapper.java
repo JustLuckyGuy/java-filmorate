@@ -9,46 +9,53 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FilmMapper {
-    public static FilmDTO maptoFilmDTO(Film film){
-        FilmDTO filmDTO = new FilmDTO(film.getMpa());
+    public static FilmDTO maptoFilmDTO(Film film) {
+        FilmDTO filmDTO = new FilmDTO();
+        filmDTO.setId(film.getId());
         filmDTO.setName(film.getName());
         filmDTO.setDescription(film.getDescription());
         filmDTO.setReleaseDate(film.getReleaseDate());
         filmDTO.setDuration(film.getDuration());
         filmDTO.getLikes().addAll(film.getLikes());
         filmDTO.getGenres().addAll(film.getGenres());
+        if (film.getMpa() != null) {
+            filmDTO.setMpa(film.getMpa());
+        }
+
         return filmDTO;
     }
 
-    public static Film mapToFilm(NewFilmRequest request){
+    public static Film mapToFilm(NewFilmRequest request) {
         Film film = Film.builder()
                 .name(request.getName())
                 .description(request.getDescription())
                 .releaseDate(request.getReleaseDate())
                 .duration(request.getDuration())
-                .mpa(request.getMpa())
                 .build();
+        if (request.getMpa() != null) {
+            film.setMpa(request.getMpa());
+        }
         film.getGenres().addAll(request.getGenres());
         return film;
     }
 
-    public static Film updateFieldsFilms(Film film, UpdateFilmRequest request){
-        if(request.hasName()){
+    public static Film updateFieldsFilms(Film film, UpdateFilmRequest request) {
+        if (request.hasName()) {
             film.setName(request.getName());
         }
-        if(request.hasDescription()){
+        if (request.hasDescription()) {
             film.setDescription(request.getDescription());
         }
-        if(request.hasReleaseDate()){
+        if (request.hasReleaseDate()) {
             film.setReleaseDate(request.getReleaseDate());
         }
-        if(request.hasDuration()){
+        if (request.hasDuration()) {
             film.setDuration(request.getDuration());
         }
-        if(request.hasMpa()){
+        if (request.hasMpa()) {
             film.setMpa(request.getMpa());
         }
-        if(request.hasGenres()){
+        if (request.hasGenres()) {
             film.getGenres().addAll(request.getGenres());
         }
 

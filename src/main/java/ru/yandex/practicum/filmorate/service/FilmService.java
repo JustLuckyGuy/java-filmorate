@@ -8,13 +8,12 @@ import ru.yandex.practicum.filmorate.dto.FilmDTO;
 import ru.yandex.practicum.filmorate.dto.new_request.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.update_request.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 
 
@@ -22,20 +21,20 @@ import java.util.List;
 @Service
 public class FilmService {
     private final FilmStorage filmDb;
-    private final UserStorage inMemoryUserStorage;
-    private final Comparator<Film> comparator = Comparator.comparingLong((Film film) -> film.getLikes().size()).reversed();
+    private final UserStorage userStorage;
+
 
     @Autowired
-    public FilmService(@Qualifier("FilmDb") FilmStorage filmDb, @Qualifier("UserDb") UserStorage inMemoryUserStorage) {
+    public FilmService(@Qualifier("filmdb") FilmStorage filmDb, @Qualifier("userdb") UserStorage userStorage) {
         this.filmDb = filmDb;
-        this.inMemoryUserStorage = inMemoryUserStorage;
+        this.userStorage = userStorage;
     }
 
-    public Collection<Film> getAllFilms() {
-        return filmDb.allFilms();
+    public List<FilmDTO> getAllFilms() {
+        return filmDb.allFilms().stream().map(FilmMapper::maptoFilmDTO).toList();
     }
 
-    public FilmDTO findFilmById(long filmId){
+    public FilmDTO findFilmById(long filmId) {
         return filmDb.findById(filmId).map(FilmMapper::maptoFilmDTO).orElseThrow(() -> new NotFoundException("Не удалось найти фильм"));
     }
 
@@ -46,47 +45,58 @@ public class FilmService {
         return FilmMapper.maptoFilmDTO(createdFilm);
     }
 
-    public FilmDTO updateFilm(long filmId, UpdateFilmRequest film) {
-        Film film1 = filmDb.findById(filmId).map(film2 -> FilmMapper.updateFieldsFilms(film2, film))
-                .orElseThrow(()-> new NotFoundException("Фильм не найден"));
+    public FilmDTO updateFilm(UpdateFilmRequest film) {
+        Film film1 = filmDb.findById(film.getId()).map(film2 -> FilmMapper.updateFieldsFilms(film2, film))
+                .orElseThrow(() -> new NotFoundException("Фильм не найден"));
         film1 = filmDb.update(film1);
         return FilmMapper.maptoFilmDTO(film1);
     }
 
-    public boolean deleteFilm(long id){
-        return filmDb.delete(id);
+    public boolean deleteFilm(long filmId) {
+        Film film = searchFilm(filmId);
+        return filmDb.delete(film.getId());
     }
 
-//    public Film setLike(Long idFilm, Long idUser) {
-//        Film film = searchFilm(idFilm, idUser);
-//        if (film.getLikes().contains(idUser)) {
-//            throw new ValidationException("Пользователь с id = " + idUser + "уже поставил лайк");
-//        }
-//        film.getLikes().add(idUser);
-//        log.trace("Пользователь с id={} поставил лайк фильму {}", idUser, film.getName());
-//        return film;
-//    }
-
-//    public Film removeLike(Long idFilm, Long idUser) {
-//        Film film = searchFilm(idFilm, idUser);
-//        film.getLikes().remove(idUser);
-//        log.trace("Пользователь с id={} убрал лайк фильму {}", idUser, film.getName());
-//        return film;
-//    }
-//
-    public List<Film> getPopularFilm(Integer count) {
+    public List<FilmDTO> getPopularFilm(Integer count) {
         log.trace("Был произведен вывод популярных фильмов");
-        return filmDb.allFilms().stream()
-                .sorted(comparator)
-                .limit(count)
-                .toList();
+        return filmDb.popularFilms(count).stream().map(FilmMapper::maptoFilmDTO).toList();
     }
 
-//    private Film searchFilm(Long idFilm, Long idUser) {
-//        User user = inMemoryUserStorage.findById(idUser).orElseThrow(() -> new NotFoundException("Пользователь c id = " + idUser + " не найден"));
-//
-//        return inMemoryFilmStorage.findById(idFilm).orElseThrow(() ->
-//                new NotFoundException("Не удалось найти фильм"));
-//    }
+
+    public FilmDTO setLike(Long idFilm, Long idUser) {
+        checkUser(idUser);
+        Film film = searchFilm(idFilm);
+        if (film.getLikes().contains(idUser)) {
+            throw new ValidationException("Пользователь с id = " + idUser + "уже поставил лайк");
+        }
+        if (filmDb.addLike(idFilm, idUser)) {
+            film.getLikes().add(idUser);
+        }
+        log.trace("Пользователь с id={} поставил лайк фильму {}", idUser, film.getName());
+        return FilmMapper.maptoFilmDTO(film);
+    }
+
+    public FilmDTO removeLike(Long idFilm, Long idUser) {
+        checkUser(idUser);
+        Film film = searchFilm(idFilm);
+        if (filmDb.removeLike(idFilm)) {
+            film.getLikes().remove(idUser);
+        }
+        log.trace("Пользователь с id={} убрал лайк фильму {}", idUser, film.getName());
+        return FilmMapper.maptoFilmDTO(film);
+    }
+
+
+    private Film searchFilm(Long idFilm) {
+        return filmDb.findById(idFilm).orElseThrow(() ->
+                new NotFoundException("Не удалось найти фильм"));
+    }
+
+    private void checkUser(long userId) {
+        if (userStorage.findById(userId).isEmpty()) {
+            throw new NotFoundException("Пользователь c id = " + userId + " не найден");
+        }
+    }
+
 
 }

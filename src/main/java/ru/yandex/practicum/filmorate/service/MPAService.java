@@ -15,25 +15,25 @@ import java.util.List;
 public class MPAService {
     private final MpaRepository mpaRepository;
 
-    public List<MPA> getAllMPA(){
+    public List<MPA> getAllMPA() {
         return mpaRepository.findAllMPA();
     }
 
-    public MPA getMpaById(long mpaId){
-        return mpaRepository.findByIdMPA(mpaId).orElseThrow(()->new NotFoundException("Данный рейтинг не найден"));
+    public MPA getMpaById(long mpaId) {
+        return mpaRepository.findByIdMPA(mpaId).orElseThrow(() -> new NotFoundException("Данный рейтинг не найден"));
     }
 
-    public MPA createMpa(MPA mpa){
+    public MPA createMpa(MPA mpa) {
         return mpaRepository.save(mpa);
     }
 
-    public MPA update(long mpaId, MPA newRating){
+    public MPA update(long mpaId, MPA newRating) {
         MPA mpa = mpaRepository.findByIdMPA(mpaId).orElseThrow(() -> new NotFoundException("Рейтинг не найден"));
-        mpa.setRating(newRating.getRating());
+        mpa.setName(newRating.getName());
         return mpaRepository.update(mpa);
     }
 
-    public boolean delete(long mpaId){
+    public boolean delete(long mpaId) {
         return mpaRepository.delete(mpaId);
     }
 }

@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -12,7 +10,6 @@ import java.util.*;
 
 @Slf4j
 @Component
-@Qualifier("InMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
     private long id = 1;
 
@@ -20,7 +17,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> allUser() {
-        return users.values();
+        return List.of();
     }
 
     @Override
@@ -79,8 +76,9 @@ public class InMemoryUserStorage implements UserStorage {
         return false;
     }
 
+
     @Override
-    public boolean isFriends(long userId, long friendId) {
-        return false;
+    public List<Long> confirmedFriends(long userId, long friendId) {
+        return List.of();
     }
 }

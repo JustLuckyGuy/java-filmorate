@@ -53,7 +53,7 @@ public class BaseRepository<T> {
             return ps;
         }, keyHolder);
 
-        // Получаем ID через Map, а не напрямую
+
         Map<String, Object> keys = keyHolder.getKeys();
         if (keys != null && keys.containsKey(nameColumn)) {
             return ((Number) keys.get(nameColumn)).longValue();

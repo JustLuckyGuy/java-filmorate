@@ -15,29 +15,29 @@ import java.util.List;
 public class GenreService {
     private final GenreRepository genreRepository;
 
-    public List<Genre> getAllGenres(){
+    public List<Genre> getAllGenres() {
         return genreRepository.findAllGenre();
     }
 
-    public Genre getGenreById(long genreId){
-        return genreRepository.findByIdGenre(genreId).orElseThrow(()->new NotFoundException("Данный жанр не найден"));
+    public Genre getGenreById(long genreId) {
+        return genreRepository.findByIdGenre(genreId).orElseThrow(() -> new NotFoundException("Данный жанр не найден"));
     }
 
-    public Genre createGenre(Genre genre){
+    public Genre createGenre(Genre genre) {
         return genreRepository.save(genre);
     }
 
-    public Genre update(long genreId, Genre newName){
+    public Genre update(long genreId, Genre newName) {
         Genre genre = genreRepository.findByIdGenre(genreId).orElseThrow(() -> new NotFoundException("Жанр не найден"));
         genre.setName(newName.getName());
         return genreRepository.update(genre);
     }
 
-    public boolean delete(long genreId){
+    public boolean delete(long genreId) {
         return genreRepository.delete(genreId);
     }
 
-    public boolean deleteR(long filmId){
+    public boolean deleteRelations(long filmId) {
         return genreRepository.deleteRelationship(filmId);
     }
 }

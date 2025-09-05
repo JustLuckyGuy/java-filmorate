@@ -24,39 +24,39 @@ public class GenreRepository extends BaseRepository<Genre> {
         super(jdbcTemplate, mapper);
     }
 
-    public List<Genre> findAllGenre(){
+    public List<Genre> findAllGenre() {
         return findMany(FIND_ALL_GENRES);
     }
 
-    public List<Genre> findByIdFilm(long filmId){
+    public List<Genre> findByIdFilm(long filmId) {
         return findMany(FIND_ALL_GENRES_ID_FILM, filmId);
     }
 
-    public Optional<Genre> findByIdGenre(long genreId){
+    public Optional<Genre> findByIdGenre(long genreId) {
         return findOne(FIND_GENRE_BY_ID, genreId);
     }
 
-    public void addRelationship(long filmId, long genreId){
-        insert(INSERT_RELATIONSHIP,"film_id", filmId, genreId);
+    public void addRelationship(long filmId, long genreId) {
+        insert(INSERT_RELATIONSHIP, "film_id", filmId, genreId);
     }
 
-    public boolean deleteRelationship(long filmId){
+    public boolean deleteRelationship(long filmId) {
         delete(DELETE_RELATIONSHIP, filmId);
         return false;
     }
 
-    public Genre save(Genre genre){
-        long id = insert(INSERT_GENRE,"genre_id", genre.getName());
+    public Genre save(Genre genre) {
+        long id = insert(INSERT_GENRE, "genre_id", genre.getName());
         genre.setId(id);
         return genre;
     }
 
-    public Genre update(Genre genre){
+    public Genre update(Genre genre) {
         update(UPDATE_GENRE, genre.getName(), genre.getId());
         return genre;
     }
 
-    public boolean delete(long genreId){
+    public boolean delete(long genreId) {
         return delete(DELETE_GENRE, genreId);
     }
 }

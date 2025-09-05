@@ -18,27 +18,27 @@ public class MPAController {
     private final MPAService mpaService;
 
     @GetMapping
-    public Collection<MPA> allGenres(){
+    public Collection<MPA> allGenres() {
         return mpaService.getAllMPA();
     }
 
     @GetMapping("/{mpaId}")
-    public MPA getGenre(@PathVariable @NotNull @Positive long mpaId){
+    public MPA getGenre(@PathVariable @NotNull @Positive long mpaId) {
         return mpaService.getMpaById(mpaId);
     }
 
     @PostMapping
-    public MPA addGenre(@RequestBody MPA mpa){
+    public MPA addGenre(@RequestBody MPA mpa) {
         return mpaService.createMpa(mpa);
     }
 
     @PutMapping("/{mpaId}")
-    public MPA updateGenre(@PathVariable @NotNull @Positive long mpaId, @RequestBody MPA newRating){
+    public MPA updateGenre(@PathVariable @NotNull @Positive long mpaId, @RequestBody MPA newRating) {
         return mpaService.update(mpaId, newRating);
     }
 
     @DeleteMapping("/{mpaId}")
-    public boolean deleteGenre(@PathVariable @NotNull @Positive long mpaId){
+    public boolean deleteGenre(@PathVariable @NotNull @Positive long mpaId) {
         return mpaService.delete(mpaId);
     }
 }

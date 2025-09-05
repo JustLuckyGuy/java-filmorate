@@ -18,32 +18,32 @@ public class GenreController {
     private final GenreService genreService;
 
     @GetMapping
-    public Collection<Genre> allGenres(){
+    public Collection<Genre> allGenres() {
         return genreService.getAllGenres();
     }
 
     @GetMapping("/{genreId}")
-    public Genre getGenre(@PathVariable @NotNull @Positive long genreId){
+    public Genre getGenre(@PathVariable @NotNull @Positive long genreId) {
         return genreService.getGenreById(genreId);
     }
 
     @PostMapping
-    public Genre addGenre(@RequestBody Genre genre){
+    public Genre addGenre(@RequestBody Genre genre) {
         return genreService.createGenre(genre);
     }
 
     @PutMapping("/{genreId}")
-    public Genre updateGenre(@PathVariable @NotNull @Positive long genreId, @RequestBody Genre newName){
+    public Genre updateGenre(@PathVariable @NotNull @Positive long genreId, @RequestBody Genre newName) {
         return genreService.update(genreId, newName);
     }
 
     @DeleteMapping("/{genreId}")
-    public boolean deleteGenre(@PathVariable @NotNull @Positive long genreId){
+    public boolean deleteGenre(@PathVariable @NotNull @Positive long genreId) {
         return genreService.delete(genreId);
     }
 
     @DeleteMapping("/film/{filmId}")
-    public boolean deleteR(@PathVariable @NotNull @Positive long filmId){
-        return genreService.deleteR(filmId);
+    public boolean deleteR(@PathVariable @NotNull @Positive long filmId) {
+        return genreService.deleteRelations(filmId);
     }
 }
