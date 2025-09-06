@@ -31,7 +31,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             "LIMIT ?) " +
             "ORDER BY (SELECT COUNT(*) FROM likes AS fl " +
             "WHERE fl.film_id = f.film_id) DESC;";
-    private static final String FIND_ALL_LIKES = "SELECT user_id FROM likes WHERE film_id =?";
     private static final String INSERT_FILM = "INSERT INTO film(name, description, release_date, duration, mpa_id) VALUES (?,?,?,?,?)";
     private static final String UPDATE_FILM = "UPDATE film SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? WHERE film_id = ?";
     private static final String DELETE_FILM = "DELETE FROM film WHERE film_id = ?";
@@ -127,9 +126,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         film.getGenres().clear();
         List<Genre> genres = genreRepository.findByIdFilm(film.getId());
         film.getGenres().addAll(genres);
-        film.getLikes().clear();
-        List<Long> likes = jdbcTemplate.queryForList(FIND_ALL_LIKES, Long.class, film.getId());
-        film.getLikes().addAll(likes);
         Optional<MPA> mpa = mpaRepository.findByIdFilm(film.getId());
         mpa.ifPresent(film::setMpa);
     }

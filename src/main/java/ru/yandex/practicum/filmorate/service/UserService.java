@@ -103,24 +103,17 @@ public class UserService {
     public List<UserDTO> showAllFriend(Long id) {
         User user = checkUser(id);
         log.trace("Был произведен поиск всех друзей пользователя: {}", user.getName());
-        return user.getFriends().stream()
-                .map(userStorage::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(UserMapper::maptoUserDTO)
-                .toList();
+        return userStorage.findFriends(user.getId()).stream()
+                .map(UserMapper::maptoUserDTO).toList();
     }
 
     public List<UserDTO> similarFriends(Long idUser, Long idOtherUser) {
         User user = checkUser(idUser);
         User otherUser = checkUser(idOtherUser);
-        List<Long> commonFriends = userStorage.confirmedFriends(user.getId(), otherUser.getId());
+        List<User> commonFriends = userStorage.confirmedFriends(user.getId(), otherUser.getId());
 
         log.trace("Был произведен поиск совпадающих друзей пользователя: {}", user.getName());
         return commonFriends.stream()
-                .map(userStorage::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
                 .map(UserMapper::maptoUserDTO)
                 .toList();
     }

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import ru.yandex.practicum.filmorate.dto.UserDTO;
 import ru.yandex.practicum.filmorate.dto.update_request.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
@@ -142,10 +143,11 @@ class UserDbTest {
         userDbStorage.addFriend(user1.getId(), createdCommonFriend.getId());
         userDbStorage.addFriend(user2.getId(), createdCommonFriend.getId());
 
-        List<Long> commonFriends = userDbStorage.confirmedFriends(user1.getId(), user2.getId());
+        List<UserDTO> commonFriends = userDbStorage.confirmedFriends(user1.getId(), user2.getId()).stream()
+                .map(UserMapper::maptoUserDTO).toList();
 
         assertThat(commonFriends).isNotNull();
         assertThat(commonFriends.size()).isEqualTo(1);
-        assertThat(commonFriends.getFirst()).isEqualTo(createdCommonFriend.getId());
+        assertThat(commonFriends.getFirst().getId()).isEqualTo(createdCommonFriend.getId());
     }
 }

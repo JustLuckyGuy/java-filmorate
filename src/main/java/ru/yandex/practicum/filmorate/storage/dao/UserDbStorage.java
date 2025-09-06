@@ -21,17 +21,15 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String FIND_ALL_USERS = "SELECT * FROM users";
     private static final String FIND_USER_BY_ID = "SELECT * FROM users WHERE user_id = ?";
     private static final String FIND_USER_BY_EMAIL = "SELECT * FROM users WHERE email = ?";
-    private static final String FIND_ALL_FRIENDS = "SELECT friend_id FROM friendship WHERE user_id = ? AND status_friends = true";
-    private static final String FIND_COMMON_FRIENDS = "SELECT f1.friend_id " +
-            "FROM friendship f1 " +
-            "JOIN friendship f2 ON f1.friend_id = f2.friend_id " +
-            "WHERE f1.user_id = ? AND f2.user_id = ? " +
-            "AND f1.status_friends = true AND f2.status_friends = true";
+    private static final String FIND_COMMON_FRIENDS = " select * from users u, friendship f, friendship o " +
+            "where u.user_id = f.friend_id AND u.user_id = o.friend_id AND f.user_id = ? AND o.user_id = ?";
     private static final String INSERT_USER = "INSERT INTO users(email, login, name, birthday) VALUES(?,?,?,?)";
     private static final String INSERT_FRIEND = "INSERT INTO friendship(user_id, friend_id) VALUES(?,?)";
     private static final String UPDATE_USER = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
     private static final String DELETE_USER = "DELETE FROM users WHERE user_id = ?";
     private static final String DELETE_FRIEND = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
+    private static final String FIND_FRIEND_OF_USER = "SELECT u.* FROM users u " +
+            "JOIN friendship f ON u.user_id = f.friend_id WHERE f.user_id = ? AND f.status_friends = true";
 
     public UserDbStorage(JdbcTemplate jdbcTemplate, RowMapper<User> mapper) {
         super(jdbcTemplate, mapper);
@@ -39,18 +37,12 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
 
     @Override
     public List<User> allUser() {
-        List<User> users = findMany(FIND_ALL_USERS);
-        for (User user : users) {
-            loadFriends(user);
-        }
-        return users;
+        return findMany(FIND_ALL_USERS);
     }
 
     @Override
     public Optional<User> findById(Long id) {
-        Optional<User> user = findOne(FIND_USER_BY_ID, id);
-        user.ifPresent(this::loadFriends);
-        return user;
+        return findOne(FIND_USER_BY_ID, id);
     }
 
     @Override
@@ -94,17 +86,14 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         return row > 0;
     }
 
-
-    public List<Long> confirmedFriends(long userId, long otherId) {
-        return jdbcTemplate.queryForList(FIND_COMMON_FRIENDS, Long.class, userId, otherId);
+    @Override
+    public List<User> findFriends(long id) {
+        return findMany(FIND_FRIEND_OF_USER, id);
     }
 
 
-    private void loadFriends(User user) {
-        log.trace("Загружаются все друзья пользователя {}", user.getName());
-        List<Long> friends = jdbcTemplate.queryForList(FIND_ALL_FRIENDS, Long.class, user.getId());
-        user.getFriends().clear();
-        user.getFriends().addAll(friends);
+    public List<User> confirmedFriends(long userId, long otherId) {
+        return findMany(FIND_COMMON_FRIENDS, userId, otherId);
     }
 
 }

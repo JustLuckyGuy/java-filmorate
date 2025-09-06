@@ -16,7 +16,6 @@ public class FilmDTO {
     private String description;
     private LocalDate releaseDate;
     private Long duration;
-    private final Set<Long> likes = new HashSet<>();
     private final Set<Genre> genres = new HashSet<>();
     private MPA mpa;
 }
