@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.FilmDTO;
@@ -13,7 +12,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
 
-@Slf4j
+
 @RestController
 @RequestMapping("/films")
 @RequiredArgsConstructor

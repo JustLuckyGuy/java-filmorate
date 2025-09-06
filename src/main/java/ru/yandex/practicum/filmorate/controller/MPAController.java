@@ -3,14 +3,12 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.service.MPAService;
 
 import java.util.Collection;
 
-@Slf4j
 @RestController
 @RequestMapping("/mpa")
 @RequiredArgsConstructor

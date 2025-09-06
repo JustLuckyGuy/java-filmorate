@@ -41,7 +41,6 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     public List<User> allUser() {
         List<User> users = findMany(FIND_ALL_USERS);
         for (User user : users) {
-            log.trace("Загружаются все друзья пользователя {}", user.getName());
             loadFriends(user);
         }
         return users;
@@ -102,6 +101,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
 
 
     private void loadFriends(User user) {
+        log.trace("Загружаются все друзья пользователя {}", user.getName());
         List<Long> friends = jdbcTemplate.queryForList(FIND_ALL_FRIENDS, Long.class, user.getId());
         user.getFriends().clear();
         user.getFriends().addAll(friends);

@@ -25,5 +25,5 @@ public class NewFilmRequest {
     @Min(1)
     private Long duration;
     private final Set<Genre> genres = new HashSet<>();
-    private final MPA mpa;
+    private MPA mpa;
 }

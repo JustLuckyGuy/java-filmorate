@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -60,11 +61,13 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     public Film create(Film film) {
         if (mpaRepository.findByIdMPA(film.getMpa().getId()).isEmpty()) {
+            log.warn("Пользователь выбрал не существующий рейтинг");
             throw new NotFoundException("Такого рейтинга не существует");
         }
         if (!film.getGenres().isEmpty()) {
             for (Genre genre : film.getGenres()) {
                 if (genreRepository.findByIdGenre(genre.getId()).isEmpty()) {
+                    log.warn("Пользователь выбрал не существующий жанр");
                     throw new NotFoundException("Такого жанра не существует");
                 }
             }
@@ -101,6 +104,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             int row = jdbcTemplate.update(INSERT_LIKE, filmId, userId);
             return row > 0;
         } catch (DataIntegrityViolationException e) {
+            log.warn("Пользователь c ID: {} уже поставил лайк фильму ID: {}", userId, filmId);
             return false;
         }
     }
@@ -119,6 +123,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
 
     private void completeAssemblyFilm(Film film) {
+        log.trace("Поиск всех жанров и рейтинга у фильма с ID: {}.{}", film.getId(), film.getName());
         film.getGenres().clear();
         List<Genre> genres = genreRepository.findByIdFilm(film.getId());
         film.getGenres().addAll(genres);

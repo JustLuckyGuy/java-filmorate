@@ -31,10 +31,12 @@ public class FilmService {
     }
 
     public List<FilmDTO> getAllFilms() {
+        log.trace("Произведен вызов всех фильмов из базы данных");
         return filmDb.allFilms().stream().map(FilmMapper::maptoFilmDTO).toList();
     }
 
     public FilmDTO findFilmById(long filmId) {
+        log.trace("Произведен вызов фильма из базы данных с ID: {}", filmId);
         return filmDb.findById(filmId).map(FilmMapper::maptoFilmDTO).orElseThrow(() -> new NotFoundException("Не удалось найти фильм"));
     }
 
@@ -42,6 +44,7 @@ public class FilmService {
     public FilmDTO createFilm(NewFilmRequest film) {
         Film createdFilm = FilmMapper.mapToFilm(film);
         createdFilm = filmDb.create(createdFilm);
+        log.info("Создан новый фильм с ID: {}.{}",createdFilm.getId(), createdFilm.getName());
         return FilmMapper.maptoFilmDTO(createdFilm);
     }
 
@@ -49,11 +52,13 @@ public class FilmService {
         Film film1 = filmDb.findById(film.getId()).map(film2 -> FilmMapper.updateFieldsFilms(film2, film))
                 .orElseThrow(() -> new NotFoundException("Фильм не найден"));
         film1 = filmDb.update(film1);
+        log.info("Фильм с ID: {}.{} был обновлен",film.getId(), film.getName());
         return FilmMapper.maptoFilmDTO(film1);
     }
 
     public boolean deleteFilm(long filmId) {
         Film film = searchFilm(filmId);
+        log.info("Фильм с ID: {}.{} был удален",film.getId(), film.getName());
         return filmDb.delete(film.getId());
     }
 
