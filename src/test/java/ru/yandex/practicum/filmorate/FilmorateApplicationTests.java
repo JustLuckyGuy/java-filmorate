@@ -11,7 +11,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.dto.new_request.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dto.new_request.NewUserRequest;
+import ru.yandex.practicum.filmorate.dto.update_request.UpdateFilmRequest;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -40,25 +43,22 @@ class FilmorateApplicationTests {
     @MockitoBean
     private FilmService filmService;
 
-    private Film film;
-    private User user;
+    private NewFilmRequest film;
+    private NewUserRequest user;
 
     @BeforeEach
     void setUp() {
-        film = Film.builder()
-                .id(1L)
-                .name("Убить билла")
-                .description("Фильм про месть")
-                .releaseDate(LocalDate.of(2003, 2, 4))
-                .duration(111L)
-                .build();
+        film = new NewFilmRequest();
+        film.setName("Убить билла");
+        film.setDescription("Фильм про месть");
+        film.setReleaseDate(LocalDate.of(2003, 2, 4));
+        film.setDuration(111L);
 
-        user = User.builder()
-                .id(1L)
-                .email("today@mail.ru")
-                .login("today")
-                .birthday(LocalDate.now())
-                .build();
+        user = new NewUserRequest();
+        user.setEmail("today@mail.ru");
+        user.setLogin("today");
+        user.setBirthday(LocalDate.now());
+
         userService.createUser(user);
         filmService.createFilm(film);
     }
@@ -125,14 +125,15 @@ class FilmorateApplicationTests {
     @Test
     void updateFilmShouldReturn200Status() throws Exception {
 
-        film.setId(1L);
-        film.setName("Интерстеллар");
-        film.setDescription("Фантастика");
+        UpdateFilmRequest updateFilmRequest = new UpdateFilmRequest();
+        updateFilmRequest.setId(1L);
+        updateFilmRequest.setName("Интерстеллар");
+        updateFilmRequest.setDescription("\"Фантастика\"");
 
         mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(film)))
-                .andDo(print()) // Для отладки
+                        .content(objectMapper.writeValueAsString(updateFilmRequest)))
+                .andDo(print())
                 .andExpect(status().isOk());
     }
 
@@ -237,11 +238,11 @@ class FilmorateApplicationTests {
                 .login("Kirill")
                 .email("example@mail.ru")
                 .build();
-        when(userService.addFriend(1L, 2L)).thenReturn(newUser);
+        when(userService.addFriend(1L, 2L)).thenReturn(UserMapper.maptoUserDTO(newUser));
 
         mockMvc.perform(put("/users/1/friends/2"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.id").value(newUser.getId()))
                 .andExpect(jsonPath("$.email").value("example@mail.ru"));
     }
 
@@ -260,11 +261,11 @@ class FilmorateApplicationTests {
                 .login("Kirill")
                 .email("example@mail.ru")
                 .build();
-        when(userService.removeFriend(1L, 2L)).thenReturn(newUser);
+        when(userService.removeFriend(1L, 2L)).thenReturn(UserMapper.maptoUserDTO(newUser));
 
         mockMvc.perform(delete("/users/1/friends/2"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.id").value(newUser.getId()))
                 .andExpect(jsonPath("$.email").value("example@mail.ru"));
     }
 

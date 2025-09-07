@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.exception;
 
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -42,6 +43,13 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleException(final Exception e) {
         log.error("Возникла ошибка! {}", e.getMessage());
+        return Map.of(ERROR, e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleDataAccessException(final DataIntegrityViolationException e) {
+        log.error("Пользователь пытался добавить в друзья дважды {}", e.getMessage());
         return Map.of(ERROR, e.getMessage());
     }
 

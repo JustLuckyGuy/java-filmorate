@@ -3,15 +3,15 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.dto.UserDTO;
+import ru.yandex.practicum.filmorate.dto.new_request.NewUserRequest;
+import ru.yandex.practicum.filmorate.dto.update_request.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.service.UserService;
+import java.util.List;
 
-import java.util.Collection;
 
-@Slf4j
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -19,42 +19,52 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public Collection<User> allUsers() {
+    public List<UserDTO> allUsers() {
         return userService.getAllUsers();
     }
 
+    @GetMapping("/{userId}")
+    public UserDTO getUser(@PathVariable @NotNull @Positive long userId) {
+        return userService.getUserById(userId);
+    }
+
     @GetMapping("/{id}/friends")
-    public Collection<User> userFriends(@PathVariable @NotNull @Positive Long id) {
+    public List<UserDTO> userFriends(@PathVariable @NotNull @Positive Long id) {
         return userService.showAllFriend(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> similarFriends(
+    public List<UserDTO> similarFriends(
             @PathVariable @NotNull @Positive Long id,
             @PathVariable @NotNull @Positive Long otherId) {
         return userService.similarFriends(id, otherId);
     }
 
     @PostMapping
-    public User create(@RequestBody @Validated User user) {
+    public UserDTO create(@RequestBody @Validated NewUserRequest user) {
         return userService.createUser(user);
     }
 
     @PutMapping
-    public User update(@RequestBody @Validated User user) {
+    public UserDTO update(@RequestBody @Validated UpdateUserRequest user) {
         return userService.updateUser(user);
     }
 
     @PutMapping("/{id}/friends/{idFriend}")
-    public User addFriend(@PathVariable @NotNull @Positive Long id,
-                          @PathVariable @NotNull @Positive Long idFriend) {
+    public UserDTO addFriend(@PathVariable @NotNull @Positive Long id,
+                             @PathVariable @NotNull @Positive Long idFriend) {
         return userService.addFriend(id, idFriend);
     }
 
     @DeleteMapping("/{id}/friends/{idFriend}")
-    public User removeFriend(@PathVariable @NotNull @Positive Long id,
-                             @PathVariable @NotNull @Positive Long idFriend) {
+    public UserDTO removeFriend(@PathVariable @NotNull @Positive Long id,
+                                @PathVariable @NotNull @Positive Long idFriend) {
         return userService.removeFriend(id, idFriend);
+    }
+
+    @DeleteMapping("/{id}")
+    public boolean removeUser(@PathVariable @NotNull @Positive Long id) {
+        return userService.removeUser(id);
     }
 
 }
