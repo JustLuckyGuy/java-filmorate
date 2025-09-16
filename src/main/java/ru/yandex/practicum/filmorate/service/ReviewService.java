@@ -135,10 +135,10 @@ public class  ReviewService {
 
     private void validateUserAndFilm(Long userId, Long filmId) {
         if (userStorage.findById(userId).isEmpty()) {
-            throw new NotFoundException("Не найден пользователь с таким id");
+            throw new NotFoundException("Не найден пользователь с таким id, отзыв не добавлен");
         };
         if (filmDb.findById(filmId).isEmpty()) {
-            throw new NotFoundException("Не найден фильм с таким id");
+            throw new NotFoundException("Не найден фильм с таким id, отзыв не добавлен");
         };
     }
 }
