@@ -23,4 +23,6 @@ public interface FilmStorage {
     boolean removeLike(long userId);
 
     List<Film> popularFilms(int count);
+
+    List<Film> allFilmsOfDirector(Long id, String sort);
 }
