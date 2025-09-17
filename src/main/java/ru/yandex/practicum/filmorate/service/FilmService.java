@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.SortOrder;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -35,6 +36,13 @@ public class FilmService {
         return filmDb.allFilms().stream().map(FilmMapper::maptoFilmDTO).toList();
     }
 
+    public List<FilmDTO> getFilmsDirector(Long directorId, String sortBy) {
+        if (sortBy == null || sortBy.isBlank()) {
+            sortBy = "id";
+        }
+        return filmDb.allFilmsOfDirector(directorId, SortOrder.from(sortBy.toLowerCase())).stream().map(FilmMapper::maptoFilmDTO).toList();
+    }
+
     public FilmDTO findFilmById(long filmId) {
         log.trace("Произведен вызов фильма из базы данных с ID: {}", filmId);
         return filmDb.findById(filmId).map(FilmMapper::maptoFilmDTO).orElseThrow(() -> new NotFoundException("Не удалось найти фильм"));
@@ -44,7 +52,7 @@ public class FilmService {
     public FilmDTO createFilm(NewFilmRequest film) {
         Film createdFilm = FilmMapper.mapToFilm(film);
         createdFilm = filmDb.create(createdFilm);
-        log.info("Создан новый фильм с ID: {}.{}",createdFilm.getId(), createdFilm.getName());
+        log.info("Создан новый фильм с ID: {}.{}", createdFilm.getId(), createdFilm.getName());
         return FilmMapper.maptoFilmDTO(createdFilm);
     }
 
@@ -52,13 +60,13 @@ public class FilmService {
         Film film1 = filmDb.findById(film.getId()).map(film2 -> FilmMapper.updateFieldsFilms(film2, film))
                 .orElseThrow(() -> new NotFoundException("Фильм не найден"));
         film1 = filmDb.update(film1);
-        log.info("Фильм с ID: {}.{} был обновлен",film.getId(), film.getName());
+        log.info("Фильм с ID: {}.{} был обновлен", film.getId(), film.getName());
         return FilmMapper.maptoFilmDTO(film1);
     }
 
     public boolean deleteFilm(long filmId) {
         Film film = searchFilm(filmId);
-        log.info("Фильм с ID: {}.{} был удален",film.getId(), film.getName());
+        log.info("Фильм с ID: {}.{} был удален", film.getId(), film.getName());
         return filmDb.delete(film.getId());
     }
 

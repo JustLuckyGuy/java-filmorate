@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class Genre {
+public class Director {
     private Long id;
     @NotBlank(message = "Поле должно быть заполнено")
     @NotNull(message = "Заполните поле")

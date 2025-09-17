@@ -13,14 +13,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.dao.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.dao.GenreRepository;
-import ru.yandex.practicum.filmorate.storage.dao.MpaRepository;
-import ru.yandex.practicum.filmorate.storage.dao.UserDbStorage;
-import ru.yandex.practicum.filmorate.storage.dao.row_mappers.FilmRowMapper;
-import ru.yandex.practicum.filmorate.storage.dao.row_mappers.GenreRowMapper;
-import ru.yandex.practicum.filmorate.storage.dao.row_mappers.MPARowMapper;
-import ru.yandex.practicum.filmorate.storage.dao.row_mappers.UserRowMapper;
+import ru.yandex.practicum.filmorate.storage.dao.*;
+import ru.yandex.practicum.filmorate.storage.dao.row_mappers.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,7 +26,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({FilmDbStorage.class, GenreRepository.class, MpaRepository.class, FilmRowMapper.class, GenreRowMapper.class, MPARowMapper.class,
-        UserDbStorage.class, UserRowMapper.class})
+        UserDbStorage.class, UserRowMapper.class, DirectorRepository.class, DirectorRowMapper.class})
 class FilmDbTest {
     private final FilmDbStorage filmDbStorage;
     private final UserDbStorage userDbStorage;
