@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class  ReviewService {
-    private final ReviewMapper reviewMapper;
     private final ReviewStorage reviewStorage;
     private final FilmStorage filmDb;
     private final UserStorage userStorage;
@@ -26,11 +25,11 @@ public class  ReviewService {
     public ReviewResponse add(ReviewRequest reviewRequest) {
         validateUserAndFilm(reviewRequest.getUserId(), reviewRequest.getFilmId());
 
-        Review review = reviewMapper.convertToReview(reviewRequest);
+        Review review = ReviewMapper.convertToReview(reviewRequest);
         review.setUseful(0);
 
         Review createdReview = reviewStorage.add(review);
-        return reviewMapper.convertToResponse(createdReview);
+        return ReviewMapper.convertToResponse(createdReview);
     }
 
     public ReviewResponse update(ReviewRequest reviewRequest) {
@@ -41,22 +40,22 @@ public class  ReviewService {
         Review existingReview = reviewStorage.getById(reviewRequest.getReviewId());
         validateUserAndFilm(reviewRequest.getUserId(), reviewRequest.getFilmId());
 
-        reviewMapper.updateReviewFromRequest(existingReview, reviewRequest);
+        ReviewMapper.updateReviewFromRequest(existingReview, reviewRequest);
         Review updatedReview = reviewStorage.update(existingReview);
 
-        return reviewMapper.convertToResponse(updatedReview);
+        return ReviewMapper.convertToResponse(updatedReview);
     }
 
-    public void delete(int id) {
+    public void delete(Long id) {
         reviewStorage.delete(id);
     }
 
-    public ReviewResponse getById(int id) {
+    public ReviewResponse getById(Long id) {
         Review review = reviewStorage.getById(id);
-        return reviewMapper.convertToResponse(review);
+        return ReviewMapper.convertToResponse(review);
     }
 
-    public List<ReviewResponse> getReviews(Integer filmId, int count) {
+    public List<ReviewResponse> getReviews(Long filmId, int count) {
         List<Review> reviews;
         if (filmId != null) {
             filmDb.findById(filmId);
@@ -66,11 +65,11 @@ public class  ReviewService {
         }
 
         return reviews.stream()
-                .map(reviewMapper::convertToResponse)
+                .map(ReviewMapper::convertToResponse)
                 .collect(Collectors.toList());
     }
 
-    public void like(int reviewId, Long userId) {
+    public void like(Long reviewId, Long userId) {
         Review review = reviewStorage.getById(reviewId);
         userStorage.findById(userId);
 
@@ -88,7 +87,7 @@ public class  ReviewService {
         reviewStorage.update(review);
     }
 
-    public void dislike(int reviewId, Long userId) {
+    public void dislike(Long reviewId, Long userId) {
         Review review = reviewStorage.getById(reviewId);
         userStorage.findById(userId);
 
@@ -106,7 +105,7 @@ public class  ReviewService {
         reviewStorage.update(review);
     }
 
-    public void removeLike(int reviewId, Long userId) {
+    public void removeLike(Long reviewId, Long userId) {
         Review review = reviewStorage.getById(reviewId);
         userStorage.findById(userId);
 
@@ -119,7 +118,7 @@ public class  ReviewService {
         reviewStorage.update(review);
     }
 
-    public void removeDislike(int reviewId, Long userId) {
+    public void removeDislike(Long reviewId, Long userId) {
         Review review = reviewStorage.getById(reviewId);
         userStorage.findById(userId);
 

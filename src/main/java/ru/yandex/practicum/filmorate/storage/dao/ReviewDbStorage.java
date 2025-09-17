@@ -36,7 +36,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
         long id = insert(INSERT_REVIEW,
                 "review_id", review.getContent(), review.getIsPositive(), review.getUserId(),
                 review.getFilmId(), review.getUseful(),review.getCreatedAt());
-        review.setReviewId((int) id);
+        review.setReviewId(id);
 
         getLikesDislikes(review);
         return review;
@@ -58,7 +58,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     }
 
     @Override
-    public Review getById(int id) {
+    public Review getById(Long id) {
         Optional<Review> review = findOne(GET_REVIEW_BY_ID_SQL,id);
         if (review.isEmpty())
             throw new NotFoundException("Такого ревью не существует");
@@ -74,14 +74,14 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     }
 
     @Override
-    public List<Review> getByFilmId(int filmId, int count) {
+    public List<Review> getByFilmId(Long filmId, int count) {
         List<Review> reviews = findMany(GET_REVIEWS_BY_FILM_SQL, filmId, count);
         reviews.forEach(this::getLikesDislikes);
         return reviews;
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(Long id) {
       delete(DELETE_REVIEW_SQL, id);
     }
 

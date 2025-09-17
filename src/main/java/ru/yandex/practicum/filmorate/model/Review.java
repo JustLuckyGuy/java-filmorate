@@ -10,7 +10,7 @@ import java.util.Set;
 @Data
 @Builder
 public class Review {
-    private Integer reviewId;
+    private Long reviewId;
     private String content;
     private Boolean isPositive;
     private Long userId;

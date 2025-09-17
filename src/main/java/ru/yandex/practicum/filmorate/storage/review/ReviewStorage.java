@@ -9,13 +9,13 @@ public interface ReviewStorage {
 
     Review update(Review review);
 
-    Review getById(int id);
+    Review getById(Long id);
 
     List<Review> getAll(int count);
 
-    List<Review> getByFilmId(int filmId, int count);
+    List<Review> getByFilmId(Long filmId, int count);
 
-    void delete(int id);
+    void delete(Long id);
 
     void getLikesDislikes(Review review);
 }

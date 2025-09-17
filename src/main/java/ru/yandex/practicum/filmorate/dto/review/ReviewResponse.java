@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class ReviewResponse {
-    private Integer reviewId;
+    private Long reviewId;
     private String content;
     private Boolean isPositive;
     private Long userId;

@@ -8,9 +8,9 @@ import ru.yandex.practicum.filmorate.model.Review;
 import java.time.LocalDateTime;
 
 @Component
-public class ReviewMapper {
+public final class ReviewMapper {
 
-    public Review convertToReview(ReviewRequest reviewRequest) {
+    public static Review convertToReview(ReviewRequest reviewRequest) {
         return Review.builder()
                 .reviewId(reviewRequest.getReviewId())
                 .content(reviewRequest.getContent())
@@ -22,7 +22,7 @@ public class ReviewMapper {
                 .build();
     }
 
-    public ReviewResponse convertToResponse(Review review) {
+    public static ReviewResponse convertToResponse(Review review) {
         ReviewResponse response = new ReviewResponse();
         response.setReviewId(review.getReviewId());
         response.setContent(review.getContent());
@@ -34,7 +34,7 @@ public class ReviewMapper {
         return response;
     }
 
-    public void updateReviewFromRequest(Review review, ReviewRequest reviewRequest) {
+    public static void updateReviewFromRequest(Review review, ReviewRequest reviewRequest) {
         review.setContent(reviewRequest.getContent());
         review.setIsPositive(reviewRequest.getIsPositive());
     }
