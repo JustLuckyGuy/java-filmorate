@@ -16,7 +16,7 @@ public class DirectorController {
     private final DirectorService directorService;
 
     @GetMapping
-    public List<Director> allFilms() {
+    public List<Director> getDirectors() {
         return directorService.getAllDirectors();
     }
 
