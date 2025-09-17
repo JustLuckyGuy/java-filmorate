@@ -12,9 +12,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.SortOrder;
-import ru.yandex.practicum.filmorate.storage.dao.DirectorRepository;
-import ru.yandex.practicum.filmorate.storage.dao.GenreRepository;
-import ru.yandex.practicum.filmorate.storage.dao.MpaRepository;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -148,9 +145,8 @@ public class FilmService {
             byTitlelist.forEach(f -> filmsMap.put(f.getId(), f));
             byDirectorList.forEach(f -> filmsMap.put(f.getId(), f));
 
-            result= filmsMap.values().stream().map(FilmMapper::maptoFilmDTO).toList();
+            result = filmsMap.values().stream().map(FilmMapper::maptoFilmDTO).toList();
         }
-
         return result;
     }
 }
