@@ -24,6 +24,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     private static final String UPDATE_REVIEW_SQL = "UPDATE reviews SET content = ?, is_positive = ?, useful = ? WHERE review_id = ?";
     private static final String INSERT_REVIEW = "INSERT INTO reviews(content, is_positive, user_id, film_id, useful,created_at) " +
             "VALUES (?,?,?,?,?,?)";
+
     public ReviewDbStorage(JdbcTemplate jdbcTemplate, RowMapper<Review> mapper,FilmStorage filmDb,UserStorage userStorage) {
         super(jdbcTemplate, mapper);
         this.filmDb = filmDb;
