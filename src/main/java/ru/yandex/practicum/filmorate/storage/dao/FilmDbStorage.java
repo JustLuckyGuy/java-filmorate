@@ -44,6 +44,11 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String DELETE_FILM = "DELETE FROM film WHERE film_id = ?";
     private static final String INSERT_LIKE = "INSERT INTO likes(film_id, user_id) VALUES(?,?)";
     private static final String DELETE_LIKE = "DELETE FROM likes WHERE user_id = ?";
+    private static final String SEARCH_BY_TITLE = "SELECT f.*, m.mpa_id as mpa_id, m.code as mpa_name " +
+            "FROM film f LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE LOWER(f.name) LIKE ?";
+    private static final String SEARCH_BY_DIRECTOR = "SELECT f.*, m.mpa_id as mpa_id, m.code as mpa_name FROM film f " +
+            "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id LEFT JOIN director_film fd ON f.film_id = fd.film_id " +
+            "LEFT JOIN directors d ON fd.director_id = d.director_id WHERE LOWER(d.name) LIKE ?";
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate, RowMapper<Film> mapper, GenreRepository genreRepository, MpaRepository mpaRepository, DirectorRepository directorRepository) {
         super(jdbcTemplate, mapper);
@@ -166,4 +171,19 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         film.getDirectors().addAll(directors);
 
     }
+
+    @Override
+    public List<Film> searchByTitle(String query) {
+        List<Film> films = findMany(SEARCH_BY_TITLE, "%" + query + "%");
+        films.forEach(this::completeAssemblyFilm);
+        return films;
+    }
+
+    @Override
+    public List<Film> searchByDirector(String query) {
+        List<Film> films = findMany(SEARCH_BY_DIRECTOR, "%" + query + "%");
+        films.forEach(this::completeAssemblyFilm);
+        return films;
+    }
+
 }
