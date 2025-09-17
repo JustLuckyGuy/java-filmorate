@@ -1,25 +1,19 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.dao.row_mappers.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 @Repository
-@RequiredArgsConstructor
-public class ReviewDbStorage implements ReviewStorage {
-    private final JdbcTemplate jdbcTemplate;
-    private final ReviewRowMapper reviewRowMapper;
+public class ReviewDbStorage extends BaseRepository<Review> implements ReviewStorage {
     private final FilmStorage filmDb;
     private final UserStorage userStorage;
 
@@ -28,23 +22,20 @@ public class ReviewDbStorage implements ReviewStorage {
     private static final String GET_REVIEWS_BY_FILM_SQL = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
     private static final String DELETE_REVIEW_SQL = "DELETE FROM reviews WHERE review_id = ?";
     private static final String UPDATE_REVIEW_SQL = "UPDATE reviews SET content = ?, is_positive = ?, useful = ? WHERE review_id = ?";
+    private static final String INSERT_REVIEW = "INSERT INTO reviews(content, is_positive, user_id, film_id, useful,created_at) " +
+            "VALUES (?,?,?,?,?,?)";
+    public ReviewDbStorage(JdbcTemplate jdbcTemplate, RowMapper<Review> mapper,FilmStorage filmDb,UserStorage userStorage) {
+        super(jdbcTemplate, mapper);
+        this.filmDb = filmDb;
+        this.userStorage = userStorage;
+    }
 
     @Override
     public Review add(Review review) {
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("reviews")
-                .usingGeneratedKeyColumns("review_id");
-
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("content", review.getContent());
-        parameters.put("is_positive", review.getIsPositive());
-        parameters.put("user_id", review.getUserId());
-        parameters.put("film_id", review.getFilmId());
-        parameters.put("useful", review.getUseful());
-        parameters.put("created_at", review.getCreatedAt());
-
-        Number generatedId = simpleJdbcInsert.executeAndReturnKey(parameters);
-        review.setReviewId(generatedId.intValue());
+        long id = insert(INSERT_REVIEW,
+                "review_id", review.getContent(), review.getIsPositive(), review.getUserId(),
+                review.getFilmId(), review.getUseful(),review.getCreatedAt());
+        review.setReviewId((int) id);
 
         getLikesDislikes(review);
         return review;
@@ -52,15 +43,11 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review update(Review review) {
-        int rowsUpdated = jdbcTemplate.update(UPDATE_REVIEW_SQL,
+        update(UPDATE_REVIEW_SQL,
                 review.getContent(),
                 review.getIsPositive(),
                 review.getUseful(),
                 review.getReviewId());
-
-        if (rowsUpdated == 0) {
-            throw new NotFoundException("Отзыв с ID " + review.getReviewId() + " не найден");
-        }
 
         updateLikesDislikes(review);
         Review updatedReview = getById(review.getReviewId());
@@ -71,32 +58,30 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review getById(int id) {
-        Review review = jdbcTemplate.query(GET_REVIEW_BY_ID_SQL, reviewRowMapper, id)
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Отзыв с ID " + id + " не найден"));
-
-        getLikesDislikes(review);
-        return review;
+        Optional<Review> review = findOne(GET_REVIEW_BY_ID_SQL,id);
+        if (review.isEmpty())
+            throw new NotFoundException("Такого ревью не существует");
+        review.ifPresent(this::getLikesDislikes);
+        return review.orElse(null);
     }
 
     @Override
     public List<Review> getAll(int count) {
-        List<Review> reviews = jdbcTemplate.query(GET_ALL_REVIEWS_SQL, reviewRowMapper, count);
+        List<Review> reviews = findMany(GET_ALL_REVIEWS_SQL, count);
         reviews.forEach(this::getLikesDislikes);
         return reviews;
     }
 
     @Override
     public List<Review> getByFilmId(int filmId, int count) {
-        List<Review> reviews = jdbcTemplate.query(GET_REVIEWS_BY_FILM_SQL, reviewRowMapper, filmId, count);
+        List<Review> reviews = findMany(GET_REVIEWS_BY_FILM_SQL, filmId, count);
         reviews.forEach(this::getLikesDislikes);
         return reviews;
     }
 
     @Override
     public void delete(int id) {
-        jdbcTemplate.update(DELETE_REVIEW_SQL, id);
+      delete(DELETE_REVIEW_SQL, id);
     }
 
     @Override
@@ -114,19 +99,19 @@ public class ReviewDbStorage implements ReviewStorage {
 
     private void updateLikesDislikes(Review review) {
         String deleteSql = "DELETE FROM review_likes WHERE review_id = ?";
-        jdbcTemplate.update(deleteSql, review.getReviewId());
+        delete(deleteSql, review.getReviewId());
 
         if (!review.getLikes().isEmpty()) {
             String insertLikesSql = "INSERT INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, true)";
             review.getLikes().forEach(userId ->
-                    jdbcTemplate.update(insertLikesSql, review.getReviewId(), userId)
+                    update(insertLikesSql, review.getReviewId(), userId)
             );
         }
 
         if (!review.getDislikes().isEmpty()) {
             String insertDislikesSql = "INSERT INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, false)";
             review.getDislikes().forEach(userId ->
-                    jdbcTemplate.update(insertDislikesSql, review.getReviewId(), userId)
+                    update(insertDislikesSql, review.getReviewId(), userId)
             );
         }
     }
