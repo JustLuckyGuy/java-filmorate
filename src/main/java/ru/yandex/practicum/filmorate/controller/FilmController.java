@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.ValidationException;
-import jakarta.validation.constraints.NotBlank;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +37,7 @@ public class FilmController {
 
     @GetMapping("/director/{directorId}")
     public List<FilmDTO> getPopularDirectorFilms(@PathVariable @NotNull @Positive long directorId,
-                                                 @RequestParam(defaultValue = "likes") @NotNull @NotBlank String sortBy) {
-        if (!(sortBy.equals("year") || sortBy.equals("likes"))) {
-            throw new ValidationException("Невозможно по данному описанию произвести сортировку");
-        }
+                                                 @RequestParam(required = false) String sortBy) {
         return filmService.getFilmsDirector(directorId, sortBy);
     }
 

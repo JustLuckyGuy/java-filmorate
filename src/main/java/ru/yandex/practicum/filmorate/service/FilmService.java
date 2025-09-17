@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.SortOrder;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -36,7 +37,10 @@ public class FilmService {
     }
 
     public List<FilmDTO> getFilmsDirector(Long directorId, String sortBy) {
-        return filmDb.allFilmsOfDirector(directorId, sortBy).stream().map(FilmMapper::maptoFilmDTO).toList();
+        if (sortBy == null || sortBy.isBlank()) {
+            sortBy = "id";
+        }
+        return filmDb.allFilmsOfDirector(directorId, SortOrder.from(sortBy.toLowerCase())).stream().map(FilmMapper::maptoFilmDTO).toList();
     }
 
     public FilmDTO findFilmById(long filmId) {

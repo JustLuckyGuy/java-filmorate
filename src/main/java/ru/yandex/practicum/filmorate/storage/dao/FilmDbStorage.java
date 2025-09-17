@@ -8,10 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MPA;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.List;
@@ -33,6 +30,9 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             "LIMIT ?) " +
             "ORDER BY (SELECT COUNT(*) FROM likes AS fl " +
             "WHERE fl.film_id = f.film_id) DESC;";
+    private static final String FIND_DIRECTOR_FILMS = "SELECT * FROM film WHERE film_id IN (" +
+            "SELECT film_id FROM director_film WHERE director_id = ?) " +
+            "ORDER BY film_id";
     private static final String FIND_DIRECTOR_FILMS_YEAR = "SELECT * FROM film WHERE film_id IN (" +
             "SELECT film_id FROM director_film WHERE director_id = ?) " +
             "ORDER BY film.release_date";
@@ -60,8 +60,14 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         return films;
     }
 
-    public List<Film> allFilmsOfDirector(Long directorId, String sortBy) {
-        List<Film> films = sortBy.equals("likes") ? findMany(FIND_DIRECTOR_FILMS_LIKES, directorId) : findMany(FIND_DIRECTOR_FILMS_YEAR, directorId);
+    public List<Film> allFilmsOfDirector(Long directorId, SortOrder sortBy) {
+        List<Film> films;
+        switch (sortBy) {
+            case SORT_BY_LIKES -> films = findMany(FIND_DIRECTOR_FILMS_LIKES, directorId);
+            case SORT_BY_YEAR -> films = findMany(FIND_DIRECTOR_FILMS_YEAR, directorId);
+            default -> films = findMany(FIND_DIRECTOR_FILMS, directorId);
+        }
+
         for (Film film : films) {
             completeAssemblyFilm(film);
         }
