@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +27,28 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String FIND_FILM_BY_ID = "SELECT * FROM film WHERE film_id = ?";
     private static final String FIND_POPULAR_FILMS = "SELECT f.* FROM film AS f WHERE f.film_id IN (" +
             "SELECT fk.film_id FROM likes AS fk " +
+            "GROUP BY fk.film_id ORDER BY COUNT(fk.user_id) DESC " +
+            "LIMIT ?) " +
+            "ORDER BY (SELECT COUNT(*) FROM likes AS fl " +
+            "WHERE fl.film_id = f.film_id) DESC;";
+    private static final String FIND_POPULAR_FILMS_WITH_GENRE = "SELECT f.* FROM film AS f WHERE f.film_id IN (" +
+            "SELECT fk.film_id FROM likes AS fk " +
+            "WHERE f.film_id IN (SELECT film_id FROM film_genre WHERE genre_id = ?) " +
+            "GROUP BY fk.film_id ORDER BY COUNT(fk.user_id) DESC " +
+            "LIMIT ?) " +
+            "ORDER BY (SELECT COUNT(*) FROM likes AS fl " +
+            "WHERE fl.film_id = f.film_id) DESC;";
+    private static final String FIND_POPULAR_FILMS_WITH_YEAR = "SELECT f.* FROM film AS f WHERE f.film_id IN (" +
+            "SELECT fk.film_id FROM likes AS fk " +
+            "WHERE YEAR(f.release_date) = ?) " +
+            "GROUP BY fk.film_id ORDER BY COUNT(fk.user_id) DESC " +
+            "LIMIT ?) " +
+            "ORDER BY (SELECT COUNT(*) FROM likes AS fl " +
+            "WHERE fl.film_id = f.film_id) DESC;";
+    private static final String FIND_POPULAR_FILMS_WITH_GENRE_AND_YEAR = "SELECT f.* FROM film AS f WHERE f.film_id IN (" +
+            "SELECT fk.film_id FROM likes AS fk " +
+            "WHERE f.film_id IN (SELECT film_id FROM film_genre WHERE genre_id = ?) " +
+            "AND YEAR(f.release_date) = ?) " +
             "GROUP BY fk.film_id ORDER BY COUNT(fk.user_id) DESC " +
             "LIMIT ?) " +
             "ORDER BY (SELECT COUNT(*) FROM likes AS fl " +
@@ -146,13 +169,33 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         return row > 0;
     }
 
-    public List<Film> popularFilms(int count) {
-        List<Film> films = findMany(FIND_POPULAR_FILMS, count);
+    public List<Film> popularFilms(int count, Integer year, Long genreId) {
+        if (genreId != null) {
+            genreRepository.findByIdGenre(genreId).orElseThrow(() -> new NotFoundException("Жанр не найден"));
+        }
+        String query;
+        List<Object> params = new ArrayList<>();
+        if (year != null && genreId != null) {
+            query = FIND_POPULAR_FILMS_WITH_GENRE_AND_YEAR;
+            params.add(genreId);
+            params.add(year);
+        } else if (genreId != null) {
+            query = FIND_POPULAR_FILMS_WITH_GENRE;
+            params.add(genreId);
+        } else if (year != null) {
+            query = FIND_POPULAR_FILMS_WITH_YEAR;
+            params.add(year);
+        } else {
+            query = FIND_POPULAR_FILMS;
+        }
+        params.add(count);
+        List<Film> films = findMany(query, params.toArray());
         for (Film film : films) {
             completeAssemblyFilm(film);
         }
         return films;
     }
+
 
     private void completeAssemblyFilm(Film film) {
         log.trace("Поиск всех жанров и рейтинга у фильма с ID: {}.{}", film.getId(), film.getName());
