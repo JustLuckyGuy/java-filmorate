@@ -92,11 +92,15 @@ public class FilmService {
     public FilmDTO removeLike(Long idFilm, Long idUser) {
         checkUser(idUser);
         Film film = searchFilm(idFilm);
-        if (filmDb.removeLike(idFilm)) {
+        if (filmDb.removeLike(idFilm, idUser)) {
             film.getLikes().remove(idUser);
         }
         log.trace("Пользователь с id={} убрал лайк фильму {}", idUser, film.getName());
         return FilmMapper.maptoFilmDTO(film);
+    }
+
+    public List<FilmDTO> findCommonFilms(Long userId, Long friendId) {
+        return filmDb.findCommonFilms(userId, friendId).stream().map(FilmMapper::maptoFilmDTO).toList();
     }
 
 
@@ -110,6 +114,5 @@ public class FilmService {
             throw new NotFoundException("Пользователь c id = " + userId + " не найден");
         }
     }
-
 
 }

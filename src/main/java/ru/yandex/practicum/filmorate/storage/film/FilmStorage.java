@@ -21,9 +21,11 @@ public interface FilmStorage {
 
     boolean addLike(long filmId, long userId);
 
-    boolean removeLike(long userId);
+    boolean removeLike(Long filmId, long userId);
 
     List<Film> popularFilms(int count);
 
     List<Film> allFilmsOfDirector(Long id, SortOrder sort);
+
+    List<Film> findCommonFilms(Long userId, Long friendId);
 }

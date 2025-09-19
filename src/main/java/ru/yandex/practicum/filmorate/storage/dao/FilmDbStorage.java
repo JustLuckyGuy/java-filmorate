@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,10 +19,6 @@ import java.util.Optional;
 @Repository
 @Qualifier("filmdb")
 public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
-    private final GenreRepository genreRepository;
-    private final MpaRepository mpaRepository;
-    private final DirectorRepository directorRepository;
-
     private static final String FIND_ALL_FILMS = "SELECT * FROM film";
     private static final String FIND_FILM_BY_ID = "SELECT * FROM film WHERE film_id = ?";
     private static final String FIND_POPULAR_FILMS = "SELECT f.* FROM film AS f WHERE f.film_id IN (" +
@@ -43,7 +40,19 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String UPDATE_FILM = "UPDATE film SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? WHERE film_id = ?";
     private static final String DELETE_FILM = "DELETE FROM film WHERE film_id = ?";
     private static final String INSERT_LIKE = "INSERT INTO likes(film_id, user_id) VALUES(?,?)";
-    private static final String DELETE_LIKE = "DELETE FROM likes WHERE user_id = ?";
+    private static final String DELETE_LIKE = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+    private static final String FIND_COMMON_FILMS = """
+            SELECT * FROM film\s
+            WHERE film_id IN (
+                SELECT film_id
+                FROM likes
+                WHERE user_id = ? OR user_id = ?
+                GROUP BY film_id
+                HAVING COUNT(DISTINCT user_id) = 2
+            );""";
+    private final GenreRepository genreRepository;
+    private final MpaRepository mpaRepository;
+    private final DirectorRepository directorRepository;
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate, RowMapper<Film> mapper, GenreRepository genreRepository, MpaRepository mpaRepository, DirectorRepository directorRepository) {
         super(jdbcTemplate, mapper);
@@ -141,8 +150,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         }
     }
 
-    public boolean removeLike(long userId) {
-        int row = jdbcTemplate.update(DELETE_LIKE, userId);
+    public boolean removeLike(Long filmId, long userId) {
+        int row = jdbcTemplate.update(DELETE_LIKE, filmId, userId);
         return row > 0;
     }
 
@@ -151,6 +160,24 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         for (Film film : films) {
             completeAssemblyFilm(film);
         }
+        return films;
+    }
+
+    public List<Film> findCommonFilms(Long userId, Long friendId) {
+        List<Film> films = findMany(FIND_COMMON_FILMS, userId, friendId);
+        if (films.isEmpty()) {
+            return Collections.emptyList(); // или new ArrayList<>()
+        }
+        for (Film film : films) {
+            completeAssemblyFilm(film);
+        }
+        films.stream()
+                .sorted((film1, film2) -> {
+                    int size1 = film1.getLikes() != null ? film1.getLikes().size() : 0;
+                    int size2 = film2.getLikes() != null ? film2.getLikes().size() : 0;
+                    return Integer.compare(size2, size1);
+                })
+                .toList();
         return films;
     }
 
