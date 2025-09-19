@@ -73,10 +73,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 GROUP BY film_id
                 HAVING COUNT(DISTINCT user_id) = 2
             );""";
-    private final GenreRepository genreRepository;
-    private final MpaRepository mpaRepository;
-    private final DirectorRepository directorRepository;
-    private static final String DELETE_LIKE = "DELETE FROM likes WHERE user_id = ?";
     private static final String SEARCH_BY_TITLE = "SELECT f.*, m.mpa_id as mpa_id, m.code as mpa_name " +
             "FROM film f LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE LOWER(f.name) LIKE ?";
     private static final String SEARCH_BY_DIRECTOR = "SELECT f.*, m.mpa_id as mpa_id, m.code as mpa_name FROM film f " +
