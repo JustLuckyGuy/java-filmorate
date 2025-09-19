@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.SortOrder;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Map;
 public class FilmService {
     private final FilmStorage filmDb;
     private final UserStorage userStorage;
+
 
     @Autowired
     public FilmService(@Qualifier("filmdb") FilmStorage filmDb, @Qualifier("userdb") UserStorage userStorage) {
@@ -72,9 +74,12 @@ public class FilmService {
         return filmDb.delete(film.getId());
     }
 
-    public List<FilmDTO> getPopularFilm(Integer count) {
+    public List<FilmDTO> getPopularFilm(Integer count, Integer year, Long genreId) {
+        if (year != null && year > Year.now().getValue()) {
+            throw new ValidationException("Вы не можете запросить фильмы из будущего");
+        }
         log.trace("Был произведен вывод популярных фильмов");
-        return filmDb.popularFilms(count).stream().map(FilmMapper::maptoFilmDTO).toList();
+        return filmDb.popularFilms(count, year, genreId).stream().map(FilmMapper::maptoFilmDTO).toList();
     }
 
 
