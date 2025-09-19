@@ -36,6 +36,7 @@ public class GenreRepository extends BaseRepository<Genre> {
         return findOne(FIND_GENRE_BY_ID, genreId);
     }
 
+
     public void addRelationship(long filmId, long genreId) {
         insert(INSERT_RELATIONSHIP, "film_id", filmId, genreId);
     }

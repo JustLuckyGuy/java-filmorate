@@ -130,7 +130,7 @@ class FilmDbTest {
         Film createdFilm = filmDbStorage.create(testFilm);
         filmDbStorage.addLike(createdFilm.getId(), createdUser.getId());
 
-        List<Film> popularFilms = filmDbStorage.popularFilms(10);
+        List<Film> popularFilms = filmDbStorage.popularFilms(10,null, null);
 
         assertThat(popularFilms).isNotNull();
         assertThat(popularFilms.size()).isEqualTo(1L);
