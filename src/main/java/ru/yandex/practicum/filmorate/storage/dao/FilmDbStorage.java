@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,28 +30,25 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             "LIMIT ?) " +
             "ORDER BY (SELECT COUNT(*) FROM likes AS fl " +
             "WHERE fl.film_id = f.film_id) DESC;";
-    private static final String FIND_POPULAR_FILMS_WITH_GENRE = "SELECT f.* FROM film AS f WHERE f.film_id IN (" +
-            "SELECT fk.film_id FROM likes AS fk " +
-            "WHERE f.film_id IN (SELECT film_id FROM film_genre WHERE genre_id = ?) " +
-            "GROUP BY fk.film_id ORDER BY COUNT(fk.user_id) DESC " +
-            "LIMIT ?) " +
-            "ORDER BY (SELECT COUNT(*) FROM likes AS fl " +
-            "WHERE fl.film_id = f.film_id) DESC;";
-    private static final String FIND_POPULAR_FILMS_WITH_YEAR = "SELECT f.* FROM film AS f WHERE f.film_id IN (" +
-            "SELECT fk.film_id FROM likes AS fk " +
-            "WHERE YEAR(f.release_date) = ?) " +
-            "GROUP BY fk.film_id ORDER BY COUNT(fk.user_id) DESC " +
-            "LIMIT ?) " +
-            "ORDER BY (SELECT COUNT(*) FROM likes AS fl " +
-            "WHERE fl.film_id = f.film_id) DESC;";
-    private static final String FIND_POPULAR_FILMS_WITH_GENRE_AND_YEAR = "SELECT f.* FROM film AS f WHERE f.film_id IN (" +
-            "SELECT fk.film_id FROM likes AS fk " +
-            "WHERE f.film_id IN (SELECT film_id FROM film_genre WHERE genre_id = ?) " +
-            "AND YEAR(f.release_date) = ?) " +
-            "GROUP BY fk.film_id ORDER BY COUNT(fk.user_id) DESC " +
-            "LIMIT ?) " +
-            "ORDER BY (SELECT COUNT(*) FROM likes AS fl " +
-            "WHERE fl.film_id = f.film_id) DESC;";
+    private static final String FIND_POPULAR_FILMS_WITH_GENRE = "SELECT f.* FROM film f " +
+            "LEFT JOIN likes l ON f.film_id = l.film_id " +
+            "INNER JOIN genre_film gf ON f.film_id = gf.film_id AND gf.genre_id = ? " +
+            "GROUP BY f.film_id " +
+            "ORDER BY COUNT(l.user_id) DESC " +
+            "LIMIT ?";
+    private static final String FIND_POPULAR_FILMS_WITH_YEAR = "SELECT f.* FROM film f " +
+            "LEFT JOIN likes l ON f.film_id = l.film_id " +
+            "WHERE YEAR(f.release_date) = ? " +
+            "GROUP BY f.film_id " +
+            "ORDER BY COUNT(l.user_id) DESC " +
+            "LIMIT ?";
+    private static final String FIND_POPULAR_FILMS_WITH_GENRE_AND_YEAR = "SELECT f.* FROM film f " +
+            "LEFT JOIN likes l ON f.film_id = l.film_id " +
+            "INNER JOIN genre_film gf ON f.film_id = gf.film_id AND gf.genre_id = ? " +
+            "WHERE YEAR(f.release_date) = ? " +
+            "GROUP BY f.film_id " +
+            "ORDER BY COUNT(l.user_id) DESC " +
+            "LIMIT ?";
     private static final String FIND_DIRECTOR_FILMS = "SELECT * FROM film WHERE film_id IN (" +
             "SELECT film_id FROM director_film WHERE director_id = ?) " +
             "ORDER BY film_id";
@@ -170,26 +166,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
 
     public List<Film> popularFilms(int count, Integer year, Long genreId) {
-        if (genreId != null) {
-            genreRepository.findByIdGenre(genreId).orElseThrow(() -> new NotFoundException("Жанр не найден"));
-        }
-        String query;
-        List<Object> params = new ArrayList<>();
-        if (year != null && genreId != null) {
-            query = FIND_POPULAR_FILMS_WITH_GENRE_AND_YEAR;
-            params.add(genreId);
-            params.add(year);
-        } else if (genreId != null) {
-            query = FIND_POPULAR_FILMS_WITH_GENRE;
-            params.add(genreId);
-        } else if (year != null) {
-            query = FIND_POPULAR_FILMS_WITH_YEAR;
-            params.add(year);
-        } else {
-            query = FIND_POPULAR_FILMS;
-        }
-        params.add(count);
-        List<Film> films = findMany(query, params.toArray());
+        List<Film> films = checkFilters(count, year, genreId);
         for (Film film : films) {
             completeAssemblyFilm(film);
         }
@@ -207,6 +184,20 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         film.getDirectors().clear();
         List<Director> directors = directorRepository.findByIdFilm(film.getId());
         film.getDirectors().addAll(directors);
+    }
 
+    private List<Film> checkFilters(int count, Integer year, Long genreId) {
+        if (genreId != null) {
+            genreRepository.findByIdGenre(genreId).orElseThrow(() -> new NotFoundException("Жанр не найден"));
+        }
+        if (year != null && genreId != null) {
+            return findMany(FIND_POPULAR_FILMS_WITH_GENRE_AND_YEAR, genreId, year, count);
+        } else if (genreId != null) {
+            return findMany(FIND_POPULAR_FILMS_WITH_GENRE, genreId, count);
+        } else if (year != null) {
+            return findMany(FIND_POPULAR_FILMS_WITH_YEAR, year, count);
+        } else {
+            return findMany(FIND_POPULAR_FILMS, count);
+        }
     }
 }
