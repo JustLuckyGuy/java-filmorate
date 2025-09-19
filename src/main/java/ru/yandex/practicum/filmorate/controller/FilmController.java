@@ -72,5 +72,11 @@ public class FilmController {
         return filmService.removeLike(filmId, userId);
     }
 
+    @GetMapping("/search")
+    public List<FilmDTO> searchFilms(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "title") String by) {
+        return filmService.searchFilms(query, by);
+    }
 
 }
