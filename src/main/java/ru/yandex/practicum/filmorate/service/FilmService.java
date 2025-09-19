@@ -15,7 +15,10 @@ import ru.yandex.practicum.filmorate.model.SortOrder;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -23,7 +26,6 @@ import java.util.List;
 public class FilmService {
     private final FilmStorage filmDb;
     private final UserStorage userStorage;
-
 
     @Autowired
     public FilmService(@Qualifier("filmdb") FilmStorage filmDb, @Qualifier("userdb") UserStorage userStorage) {
@@ -111,5 +113,40 @@ public class FilmService {
         }
     }
 
+    public List<FilmDTO> searchFilms(String query, String by) {
+        List<FilmDTO> result = new ArrayList<>();
+        String searchQuery = query.toLowerCase();
+        String[] searchBy = by.split(",");
+        boolean byTitle = false;
+        boolean byDirector = false;
+        for (String searchType : searchBy) {
+            switch (searchType.trim().toLowerCase()) {
+                case "title":
+                    byTitle = true;
+                    break;
+                case "director":
+                    byDirector = true;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Некоректный параметр поиска: " + searchType);
+            }
+        }
+        if (byTitle)
+            result = filmDb.searchByTitle(searchQuery).stream().map(FilmMapper::maptoFilmDTO).toList();
 
+        if (byDirector)
+            result = filmDb.searchByDirector(searchQuery).stream().map(FilmMapper::maptoFilmDTO).toList();
+
+        if (byTitle && byDirector) {
+            List<Film> byTitlelist = filmDb.searchByTitle(searchQuery);
+            List<Film> byDirectorList = filmDb.searchByDirector(searchQuery);
+
+            Map<Long, Film> filmsMap = new HashMap<>();
+            byTitlelist.forEach(f -> filmsMap.put(f.getId(), f));
+            byDirectorList.forEach(f -> filmsMap.put(f.getId(), f));
+
+            result = filmsMap.values().stream().map(FilmMapper::maptoFilmDTO).toList();
+        }
+        return result;
+    }
 }
