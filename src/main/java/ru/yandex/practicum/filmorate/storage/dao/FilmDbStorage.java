@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
