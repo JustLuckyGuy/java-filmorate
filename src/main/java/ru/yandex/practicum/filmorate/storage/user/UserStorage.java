@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import ru.yandex.practicum.filmorate.model.FeedBlock;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -22,8 +23,9 @@ public interface UserStorage {
 
     boolean deleteFriend(long userId, long friendId);
 
-
     List<User> confirmedFriends(long userId, long friendId);
 
     List<User> findFriends(long id);
+
+    List<FeedBlock> findUserFeed(Long id);
 }

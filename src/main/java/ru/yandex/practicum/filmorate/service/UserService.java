@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.dto.update_request.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.exception.DuplicateDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.FeedBlock;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -116,6 +117,10 @@ public class UserService {
         return commonFriends.stream()
                 .map(UserMapper::maptoUserDTO)
                 .toList();
+    }
+
+    public List<FeedBlock> findUserFeed(Long userId) {
+        return userStorage.findUserFeed(userId);
     }
 
     private User checkUser(Long userId) {

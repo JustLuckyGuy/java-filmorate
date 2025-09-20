@@ -20,7 +20,7 @@ public class FeedBlockRowMapper implements RowMapper<FeedBlock> {
         block.setOperation(rs.getString("operation"));
         block.setEntityId(rs.getLong("entity_id"));
         Timestamp timestamp = rs.getTimestamp("created_at");
-        block.setCreatedAt(timestamp.toInstant());
+        block.setTimestamp(timestamp.toInstant().toEpochMilli());
         return block;
     }
 }

@@ -2,8 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
 
-import java.time.Instant;
-
 @Data
 public class FeedBlock {
     Long eventId;
@@ -11,5 +9,5 @@ public class FeedBlock {
     String eventType;
     String operation;
     Long entityId;
-    Instant createdAt;
+    Long timestamp;
 }

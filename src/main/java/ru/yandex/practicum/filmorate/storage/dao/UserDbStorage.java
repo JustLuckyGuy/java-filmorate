@@ -6,7 +6,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.FeedBlock;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.dao.row_mappers.FeedBlockRowMapper;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.sql.Timestamp;
@@ -32,6 +34,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String DELETE_FRIEND = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
     private static final String FIND_FRIEND_OF_USER = "SELECT u.* FROM users u " +
             "JOIN friendship f ON u.user_id = f.friend_id WHERE f.user_id = ? AND f.status_friends = true";
+    private static final String FIND_USER_FEED = "SELECT * FROM feed WHERE user_id = ? ";
 
     public UserDbStorage(JdbcTemplate jdbcTemplate, RowMapper<User> mapper) {
         super(jdbcTemplate, mapper);
@@ -86,7 +89,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     @Override
     public boolean deleteFriend(long userId, long friendId) {
         int row = jdbcTemplate.update(DELETE_FRIEND, userId, friendId);
-        if(row > 0) {
+        if (row > 0) {
             update(INSERT_FEED, userId, "FRIEND", "REMOVE", friendId, Timestamp.from(Instant.now()));
             return true;
         } else {
@@ -99,9 +102,13 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         return findMany(FIND_FRIEND_OF_USER, id);
     }
 
-
+    @Override
     public List<User> confirmedFriends(long userId, long otherId) {
         return findMany(FIND_COMMON_FRIENDS, userId, otherId);
     }
 
+    @Override
+    public List<FeedBlock> findUserFeed(Long userId) {
+        return jdbcTemplate.query(FIND_USER_FEED, new FeedBlockRowMapper(), userId);
+    }
 }
