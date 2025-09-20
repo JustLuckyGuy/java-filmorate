@@ -71,8 +71,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 FROM likes
                 WHERE user_id = ? OR user_id = ?
                 GROUP BY film_id
-                HAVING COUNT(DISTINCT user_id) = 2
-            );""";
+                HAVING COUNT(DISTINCT user_id) = 2)
+            ORDER BY (SELECT COUNT(*) FROM likes as l WHERE l.film_id = film.film_id) DESC;""";
     private static final String SEARCH_BY_TITLE = "SELECT f.*, m.mpa_id as mpa_id, m.code as mpa_name " +
             "FROM film f LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE LOWER(f.name) LIKE ?";
     private static final String SEARCH_BY_DIRECTOR = "SELECT f.*, m.mpa_id as mpa_id, m.code as mpa_name FROM film f " +
@@ -190,19 +190,9 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     public List<Film> findCommonFilms(Long userId, Long friendId) {
         List<Film> films = findMany(FIND_COMMON_FILMS, userId, friendId);
-        if (films.isEmpty()) {
-            return Collections.emptyList(); // или new ArrayList<>()
-        }
         for (Film film : films) {
             completeAssemblyFilm(film);
         }
-        films.stream()
-                .sorted((film1, film2) -> {
-                    int size1 = film1.getLikes() != null ? film1.getLikes().size() : 0;
-                    int size2 = film2.getLikes() != null ? film2.getLikes().size() : 0;
-                    return Integer.compare(size2, size1);
-                })
-                .toList();
         return films;
     }
 
