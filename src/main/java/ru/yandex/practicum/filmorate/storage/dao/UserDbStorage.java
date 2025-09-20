@@ -25,16 +25,40 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String FIND_ALL_USERS = "SELECT * FROM users";
     private static final String FIND_USER_BY_ID = "SELECT * FROM users WHERE user_id = ?";
     private static final String FIND_USER_BY_EMAIL = "SELECT * FROM users WHERE email = ?";
-    private static final String FIND_COMMON_FRIENDS = " select * from users u, friendship f, friendship o " +
-            "where u.user_id = f.friend_id AND u.user_id = o.friend_id AND f.user_id = ? AND o.user_id = ?";
+    private static final String FIND_COMMON_FRIENDS = " select * from users u, friendship f, friendship o " + "where u.user_id = f.friend_id AND u.user_id = o.friend_id AND f.user_id = ? AND o.user_id = ?";
     private static final String INSERT_USER = "INSERT INTO users(email, login, name, birthday) VALUES(?,?,?,?)";
     private static final String INSERT_FRIEND = "INSERT INTO friendship(user_id, friend_id) VALUES(?,?)";
     private static final String UPDATE_USER = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
     private static final String DELETE_USER = "DELETE FROM users WHERE user_id = ?";
     private static final String DELETE_FRIEND = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
-    private static final String FIND_FRIEND_OF_USER = "SELECT u.* FROM users u " +
-            "JOIN friendship f ON u.user_id = f.friend_id WHERE f.user_id = ? AND f.status_friends = true";
+    private static final String FIND_FRIEND_OF_USER = "SELECT u.* FROM users u " + "JOIN friendship f ON u.user_id = f.friend_id WHERE f.user_id = ? AND f.status_friends = true";
     private static final String FIND_USER_FEED = "SELECT * FROM feed WHERE user_id = ? ";
+    private static final String FIND_USER_RECOMMENDATIONS = """
+            WITH user_likes AS (
+                SELECT film_id FROM likes WHERE user_id = ?
+            ),
+            other_users_likes AS (
+                SELECT l.user_id, l.film_id
+                FROM likes l
+                WHERE l.user_id != ? AND l.film_id IN (SELECT film_id FROM user_likes)
+            ),
+            similarity_scores AS (
+                SELECT
+                    oul.user_id,
+                    COUNT(*) as common_likes
+                FROM other_users_likes oul
+                GROUP BY oul.user_id
+                ORDER BY common_likes DESC
+                LIMIT 1
+            ),
+            recommendations AS (
+                SELECT DISTINCT l.film_id
+                FROM likes l
+                JOIN similarity_scores ss ON l.user_id = ss.user_id
+                WHERE l.film_id NOT IN (SELECT film_id FROM user_likes)
+            )
+            SELECT film_id FROM recommendations
+            """;
 
     public UserDbStorage(JdbcTemplate jdbcTemplate, RowMapper<User> mapper) {
         super(jdbcTemplate, mapper);
@@ -110,5 +134,10 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     @Override
     public List<FeedBlock> findUserFeed(Long userId) {
         return jdbcTemplate.query(FIND_USER_FEED, new FeedBlockRowMapper(), userId);
+    }
+
+    @Override
+    public List<Long> getRecommendations(Long userId) {
+        return jdbcTemplate.query(FIND_USER_RECOMMENDATIONS, (rs, rowNum) -> rs.getLong("film_id"), userId, userId);
     }
 }

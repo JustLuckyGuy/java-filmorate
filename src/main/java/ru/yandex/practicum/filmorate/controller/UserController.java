@@ -10,6 +10,8 @@ import ru.yandex.practicum.filmorate.dto.new_request.NewUserRequest;
 import ru.yandex.practicum.filmorate.dto.update_request.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.model.FeedBlock;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.dto.FilmDTO;
+
 
 import java.util.List;
 
@@ -36,9 +38,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<UserDTO> similarFriends(
-            @PathVariable @NotNull @Positive Long id,
-            @PathVariable @NotNull @Positive Long otherId) {
+    public List<UserDTO> similarFriends(@PathVariable @NotNull @Positive Long id, @PathVariable @NotNull @Positive Long otherId) {
         return userService.similarFriends(id, otherId);
     }
 
@@ -53,14 +53,12 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{idFriend}")
-    public UserDTO addFriend(@PathVariable @NotNull @Positive Long id,
-                             @PathVariable @NotNull @Positive Long idFriend) {
+    public UserDTO addFriend(@PathVariable @NotNull @Positive Long id, @PathVariable @NotNull @Positive Long idFriend) {
         return userService.addFriend(id, idFriend);
     }
 
     @DeleteMapping("/{id}/friends/{idFriend}")
-    public UserDTO removeFriend(@PathVariable @NotNull @Positive Long id,
-                                @PathVariable @NotNull @Positive Long idFriend) {
+    public UserDTO removeFriend(@PathVariable @NotNull @Positive Long id, @PathVariable @NotNull @Positive Long idFriend) {
         return userService.removeFriend(id, idFriend);
     }
 
@@ -74,4 +72,8 @@ public class UserController {
         return userService.findUserFeed(id);
     }
 
+    @GetMapping("/{id}/recommendations")
+    public List<FilmDTO> getRecommendations(@PathVariable Long id) {
+        return userService.getRecommendations(id);
+    }
 }

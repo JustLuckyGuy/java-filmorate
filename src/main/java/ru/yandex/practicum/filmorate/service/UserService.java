@@ -15,8 +15,12 @@ import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.FeedBlock;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.dto.FilmDTO;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.*;
+import java.util.Optional;
 
 
 @Slf4j
@@ -24,10 +28,12 @@ import java.util.*;
 public class UserService {
 
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
 
     @Autowired
-    public UserService(@Qualifier("userdb") UserStorage userStorage) {
+    public UserService(@Qualifier("userdb") UserStorage userStorage, @Qualifier("filmdb") FilmStorage filmStorage) {
         this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
     }
 
     public List<UserDTO> getAllUsers() {
@@ -62,9 +68,7 @@ public class UserService {
             }
         }
 
-        User user = userStorage.findById(request.getId())
-                .map(user1 -> UserMapper.updateFieldsUser(user1, request))
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        User user = userStorage.findById(request.getId()).map(user1 -> UserMapper.updateFieldsUser(user1, request)).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         log.trace("Пользователь обновлен");
         user = userStorage.update(user);
         return UserMapper.maptoUserDTO(user);
@@ -104,8 +108,7 @@ public class UserService {
     public List<UserDTO> showAllFriend(Long id) {
         User user = checkUser(id);
         log.trace("Был произведен поиск всех друзей пользователя: {}", user.getName());
-        return userStorage.findFriends(user.getId()).stream()
-                .map(UserMapper::maptoUserDTO).toList();
+        return userStorage.findFriends(user.getId()).stream().map(UserMapper::maptoUserDTO).toList();
     }
 
     public List<UserDTO> similarFriends(Long idUser, Long idOtherUser) {
@@ -114,9 +117,7 @@ public class UserService {
         List<User> commonFriends = userStorage.confirmedFriends(user.getId(), otherUser.getId());
 
         log.trace("Был произведен поиск совпадающих друзей пользователя: {}", user.getName());
-        return commonFriends.stream()
-                .map(UserMapper::maptoUserDTO)
-                .toList();
+        return commonFriends.stream().map(UserMapper::maptoUserDTO).toList();
     }
 
     public List<FeedBlock> findUserFeed(Long userId) {
@@ -125,6 +126,13 @@ public class UserService {
 
     private User checkUser(Long userId) {
         return userStorage.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+    }
+
+    public List<FilmDTO> getRecommendations(Long userId) {
+        checkUser(userId);
+        List<Long> recommendedFilmIds = userStorage.getRecommendations(userId);
+
+        return recommendedFilmIds.stream().map(filmId -> filmStorage.findById(filmId)).filter(Optional::isPresent).map(Optional::get).map(FilmMapper::maptoFilmDTO).toList();
     }
 
 }
