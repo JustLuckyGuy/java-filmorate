@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 public class BaseRepository<T> {
-    protected final static String INSERT_FEED = "INSERT INTO feed(user_id, event_type, operation, entity_id, created_at) " +
+    protected static final String INSERT_FEED = "INSERT INTO feed(user_id, event_type, operation, entity_id, created_at) " +
             "VALUES(?, ?, ?, ?, ?)";
     protected final JdbcTemplate jdbcTemplate;
     private final RowMapper<T> mapper;
