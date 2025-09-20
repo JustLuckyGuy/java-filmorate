@@ -169,7 +169,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     public boolean addLike(long filmId, long userId) {
         try {
             int row = jdbcTemplate.update(INSERT_LIKE, filmId, userId);
-            if(row > 0) {
+            if (row > 0) {
                 update(INSERT_FEED, userId, "LIKE", "ADD", filmId, Timestamp.from(Instant.now()));
                 return true;
             } else {
@@ -184,7 +184,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     public boolean removeLike(Long filmId, long userId) {
         int row = jdbcTemplate.update(DELETE_LIKE, filmId, userId);
-        if(row > 0) {
+        if (row > 0) {
             update(INSERT_FEED, userId, "LIKE", "REMOVE", filmId, Timestamp.from(Instant.now()));
             return true;
         } else {
