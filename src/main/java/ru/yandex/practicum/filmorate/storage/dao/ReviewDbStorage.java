@@ -9,6 +9,8 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,8 +39,8 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
                 "review_id", review.getContent(), review.getIsPositive(), review.getUserId(),
                 review.getFilmId(), review.getUseful(),review.getCreatedAt());
         review.setReviewId(id);
-
         getLikesDislikes(review);
+        update(INSERT_FEED, review.getUserId(), "REVIEW", "ADD", review.getReviewId(), Timestamp.from(Instant.now()));
         return review;
     }
 
@@ -48,12 +50,12 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
                 review.getContent(),
                 review.getIsPositive(),
                 review.getUseful(),
-                review.getReviewId());
-
+                review.getReviewId()
+        );
         updateLikesDislikes(review);
         Review updatedReview = getById(review.getReviewId());
         getLikesDislikes(updatedReview);
-
+        update(INSERT_FEED, review.getUserId(), "REVIEW", "UPDATE", review.getReviewId(), Timestamp.from(Instant.now()));
         return updatedReview;
     }
 
@@ -82,7 +84,9 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
     @Override
     public void delete(Long id) {
-      delete(DELETE_REVIEW_SQL, id);
+        Review review = getById(id);
+        delete(DELETE_REVIEW_SQL, id);
+        update(INSERT_FEED, review.getUserId(), "REVIEW", "REMOVE", review.getReviewId(), Timestamp.from(Instant.now()));
     }
 
     @Override

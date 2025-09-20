@@ -11,6 +11,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -167,16 +169,27 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     public boolean addLike(long filmId, long userId) {
         try {
             int row = jdbcTemplate.update(INSERT_LIKE, filmId, userId);
-            return row > 0;
+            if(row > 0) {
+                update(INSERT_FEED, userId, "LIKE", "ADD", filmId, Timestamp.from(Instant.now()));
+                return true;
+            } else {
+                return false;
+            }
         } catch (DataIntegrityViolationException e) {
             log.warn("Пользователь c ID: {} уже поставил лайк фильму ID: {}", userId, filmId);
             return false;
         }
+
     }
 
     public boolean removeLike(Long filmId, long userId) {
         int row = jdbcTemplate.update(DELETE_LIKE, filmId, userId);
-        return row > 0;
+        if(row > 0) {
+            update(INSERT_FEED, userId, "LIKE", "REMOVE", filmId, Timestamp.from(Instant.now()));
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public List<Film> popularFilms(int count, Integer year, Long genreId) {

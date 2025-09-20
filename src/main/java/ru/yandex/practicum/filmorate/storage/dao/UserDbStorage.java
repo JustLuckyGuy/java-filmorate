@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,6 +76,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     public boolean addFriend(long userId, long friendId) {
         try {
             int row = jdbcTemplate.update(INSERT_FRIEND, userId, friendId);
+            update(INSERT_FEED, userId, "FRIEND", "ADD", friendId, Timestamp.from(Instant.now()));
             return row > 0;
         } catch (DataIntegrityViolationException e) {
             return false;
@@ -83,7 +86,12 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     @Override
     public boolean deleteFriend(long userId, long friendId) {
         int row = jdbcTemplate.update(DELETE_FRIEND, userId, friendId);
-        return row > 0;
+        if(row > 0) {
+            update(INSERT_FEED, userId, "FRIEND", "REMOVE", friendId, Timestamp.from(Instant.now()));
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
