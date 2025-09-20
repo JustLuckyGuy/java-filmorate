@@ -11,6 +11,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,7 +64,16 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String UPDATE_FILM = "UPDATE film SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? WHERE film_id = ?";
     private static final String DELETE_FILM = "DELETE FROM film WHERE film_id = ?";
     private static final String INSERT_LIKE = "INSERT INTO likes(film_id, user_id) VALUES(?,?)";
-    private static final String DELETE_LIKE = "DELETE FROM likes WHERE user_id = ?";
+    private static final String DELETE_LIKE = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+    private static final String FIND_COMMON_FILMS = """
+            SELECT * FROM film\s
+            WHERE film_id IN (
+                SELECT film_id
+                FROM likes
+                WHERE user_id = ? OR user_id = ?
+                GROUP BY film_id
+                HAVING COUNT(DISTINCT user_id) = 2)
+            ORDER BY (SELECT COUNT(*) FROM likes as l WHERE l.film_id = film.film_id) DESC;""";
     private static final String SEARCH_BY_TITLE = "SELECT f.*, m.mpa_id as mpa_id, m.code as mpa_name " +
             "FROM film f LEFT JOIN mpa m ON f.mpa_id = m.mpa_id WHERE LOWER(f.name) LIKE ?";
     private static final String SEARCH_BY_DIRECTOR = "SELECT f.*, m.mpa_id as mpa_id, m.code as mpa_name FROM film f " +
@@ -158,16 +169,27 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     public boolean addLike(long filmId, long userId) {
         try {
             int row = jdbcTemplate.update(INSERT_LIKE, filmId, userId);
-            return row > 0;
+            if (row > 0) {
+                update(INSERT_FEED, userId, "LIKE", "ADD", filmId, Timestamp.from(Instant.now()));
+                return true;
+            } else {
+                return false;
+            }
         } catch (DataIntegrityViolationException e) {
             log.warn("Пользователь c ID: {} уже поставил лайк фильму ID: {}", userId, filmId);
             return false;
         }
+
     }
 
-    public boolean removeLike(long userId) {
-        int row = jdbcTemplate.update(DELETE_LIKE, userId);
-        return row > 0;
+    public boolean removeLike(Long filmId, long userId) {
+        int row = jdbcTemplate.update(DELETE_LIKE, filmId, userId);
+        if (row > 0) {
+            update(INSERT_FEED, userId, "LIKE", "REMOVE", filmId, Timestamp.from(Instant.now()));
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public List<Film> popularFilms(int count, Integer year, Long genreId) {
@@ -178,6 +200,13 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         return films;
     }
 
+    public List<Film> findCommonFilms(Long userId, Long friendId) {
+        List<Film> films = findMany(FIND_COMMON_FILMS, userId, friendId);
+        for (Film film : films) {
+            completeAssemblyFilm(film);
+        }
+        return films;
+    }
 
     private void completeAssemblyFilm(Film film) {
         log.trace("Поиск всех жанров и рейтинга у фильма с ID: {}.{}", film.getId(), film.getName());
@@ -219,5 +248,4 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         films.forEach(this::completeAssemblyFilm);
         return films;
     }
-
 }

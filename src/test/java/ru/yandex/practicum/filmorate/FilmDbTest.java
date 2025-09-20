@@ -118,7 +118,7 @@ class FilmDbTest {
 
         boolean likeAdded = filmDbStorage.addLike(createdFilm.getId(), createdUser.getId());
 
-        boolean likeRemoved = filmDbStorage.removeLike(1L);
+        boolean likeRemoved = filmDbStorage.removeLike(createdFilm.getId(), createdUser.getId());
 
         assertThat(likeAdded).isTrue();
         assertThat(likeRemoved).isTrue();

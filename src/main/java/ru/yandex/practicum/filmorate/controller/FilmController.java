@@ -79,4 +79,8 @@ public class FilmController {
         return filmService.searchFilms(query, by);
     }
 
+    @GetMapping("/common")
+    public List<FilmDTO> findCommonFilms(@RequestParam Long userId, @RequestParam Long friendId) {
+        return filmService.findCommonFilms(userId, friendId);
+    }
 }

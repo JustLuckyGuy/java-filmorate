@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.UserDTO;
 import ru.yandex.practicum.filmorate.dto.new_request.NewUserRequest;
 import ru.yandex.practicum.filmorate.dto.update_request.UpdateUserRequest;
+import ru.yandex.practicum.filmorate.model.FeedBlock;
 import ru.yandex.practicum.filmorate.service.UserService;
+
 import java.util.List;
 
 
@@ -65,6 +67,11 @@ public class UserController {
     @DeleteMapping("/{id}")
     public boolean removeUser(@PathVariable @NotNull @Positive Long id) {
         return userService.removeUser(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<FeedBlock> findUserFeed(@PathVariable Long id) {
+        return userService.findUserFeed(id);
     }
 
 }
