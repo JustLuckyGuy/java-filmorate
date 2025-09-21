@@ -28,4 +28,6 @@ public interface UserStorage {
     List<User> findFriends(long id);
 
     List<FeedBlock> findUserFeed(Long id);
+
+    List<Long> getRecommendations(Long userId);
 }
