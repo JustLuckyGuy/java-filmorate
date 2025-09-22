@@ -79,7 +79,7 @@ public class FilmService {
             throw new ValidationException("Вы не можете запросить фильмы из будущего");
         }
         log.trace("Был произведен вывод популярных фильмов");
-        if (filmDb.popularFilms(count, year, genreId).isEmpty()) {
+        if (filmDb.popularFilms(count, year, genreId).isEmpty() && year == null && genreId == null) {
             return getAllFilms();
         }
         return filmDb.popularFilms(count, year, genreId).stream().map(FilmMapper::maptoFilmDTO).toList();
