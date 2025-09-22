@@ -12,7 +12,7 @@ import java.util.Optional;
 public class GenreRepository extends BaseRepository<Genre> {
     private static final String FIND_ALL_GENRES = "SELECT * FROM genre";
     private static final String FIND_ALL_GENRES_ID_FILM = "select * from genre " +
-            "WHERE genre_id IN (SELECT genre_id from genre_film WHERE film_id = ?)";
+            "WHERE genre_id IN (SELECT genre_id from genre_film WHERE film_id = ?) ORDER BY genre_id";
     private static final String FIND_GENRE_BY_ID = "SELECT * FROM genre WHERE genre_id = ?";
     private static final String INSERT_GENRE = "INSERT INTO genre (name) VALUES (?)";
     private static final String UPDATE_GENRE = "UPDATE genre SET name = ? WHERE genre_id = ? ";
@@ -42,8 +42,7 @@ public class GenreRepository extends BaseRepository<Genre> {
     }
 
     public boolean deleteRelationship(long filmId) {
-        delete(DELETE_RELATIONSHIP, filmId);
-        return false;
+        return  delete(DELETE_RELATIONSHIP, filmId);
     }
 
     public Genre save(Genre genre) {

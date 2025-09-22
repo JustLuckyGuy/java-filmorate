@@ -20,13 +20,3 @@ FROM (VALUES
     ('NC-17')
     ) AS new_codes(code)
 WHERE NOT EXISTS (SELECT 1 FROM mpa WHERE mpa.code = new_codes.code);
-
-INSERT INTO directors (name)
-SELECT name
-FROM (VALUES
-    ('Стивен Спилберг'),
-    ('Кристофер Нолан'),
-    ('Квентин Тарантино'),
-    ('Федор Бондарчук Сергеевич')
-) AS new_directors(name)
-WHERE NOT EXISTS (SELECT 1 FROM directors WHERE directors.name = new_directors.name);

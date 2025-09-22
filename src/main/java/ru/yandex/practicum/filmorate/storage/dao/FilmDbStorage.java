@@ -13,8 +13,10 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Repository
@@ -96,6 +98,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
 
     public List<Film> allFilmsOfDirector(Long directorId, SortOrder sortBy) {
+        directorRepository.findByIdDirector(directorId).orElseThrow(() -> new NotFoundException("Режиссер не найден"));
         List<Film> films;
         switch (sortBy) {
             case SORT_BY_LIKES -> films = findMany(FIND_DIRECTOR_FILMS_LIKES, directorId);
@@ -133,7 +136,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         Long id = insert(INSERT_FILM, "film_id", film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), mpaId);
         film.setId(id);
         if (!film.getGenres().isEmpty()) {
-            for (Genre genre : film.getGenres()) {
+            Set<Genre> unique = new HashSet<>(film.getGenres());
+            for (Genre genre : unique) {
                 genreRepository.addRelationship(film.getId(), genre.getId());
             }
         }
@@ -146,19 +150,28 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
 
     public Film update(Film film) {
+
         update(UPDATE_FILM, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
+
         if (!film.getGenres().isEmpty()) {
             genreRepository.deleteRelationship(film.getId());
             for (Genre genre : film.getGenres()) {
                 genreRepository.addRelationship(film.getId(), genre.getId());
             }
+        } else {
+            genreRepository.deleteRelationship(film.getId());
         }
+
         if (!film.getDirectors().isEmpty()) {
             directorRepository.deleteRelationship(film.getId());
             for (Director director : film.getDirectors()) {
                 directorRepository.addRelationship(film.getId(), director.getId());
             }
+        } else {
+            directorRepository.deleteRelationship(film.getId());
         }
+
+        completeAssemblyFilm(film);
         return film;
     }
 
