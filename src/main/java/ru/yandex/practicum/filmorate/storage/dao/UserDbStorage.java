@@ -32,7 +32,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String DELETE_USER = "DELETE FROM users WHERE user_id = ?";
     private static final String DELETE_FRIEND = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
     private static final String FIND_FRIEND_OF_USER = "SELECT u.* FROM users u " + "JOIN friendship f ON u.user_id = f.friend_id WHERE f.user_id = ? AND f.status_friends = true";
-    private static final String FIND_USER_FEED = "SELECT * FROM feed WHERE user_id = ? ";
+    private static final String FIND_USER_FEED = "SELECT * FROM feed WHERE user_id = ? ORDER BY event_id";
     private static final String FIND_USER_RECOMMENDATIONS = """
             WITH user_likes AS (
                 SELECT film_id FROM likes WHERE user_id = ?
@@ -59,6 +59,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
             )
             SELECT film_id FROM recommendations
             """;
+    private static final String CHECK_DUPLICATE_LIKE = "SELECT COUNT(*) FROM friendship WHERE user_id = ? AND friend_id = ?";
 
     public UserDbStorage(JdbcTemplate jdbcTemplate, RowMapper<User> mapper) {
         super(jdbcTemplate, mapper);
@@ -101,6 +102,10 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
 
     @Override
     public boolean addFriend(long userId, long friendId) {
+        if(isFriendDuplicate(userId, friendId)>0){
+            update(INSERT_FEED, userId, "FRIEND", "ADD", friendId, Timestamp.from(Instant.now()));
+            return false;
+        }
         try {
             int row = jdbcTemplate.update(INSERT_FRIEND, userId, friendId);
             update(INSERT_FEED, userId, "FRIEND", "ADD", friendId, Timestamp.from(Instant.now()));
@@ -139,5 +144,10 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     @Override
     public List<Long> getRecommendations(Long userId) {
         return jdbcTemplate.query(FIND_USER_RECOMMENDATIONS, (rs, rowNum) -> rs.getLong("film_id"), userId, userId);
+    }
+
+    private int isFriendDuplicate(long filmId, long userId){
+        Integer result = jdbcTemplate.queryForObject(CHECK_DUPLICATE_LIKE, Integer.class, filmId, userId);
+        return result != null ? result : 0;
     }
 }

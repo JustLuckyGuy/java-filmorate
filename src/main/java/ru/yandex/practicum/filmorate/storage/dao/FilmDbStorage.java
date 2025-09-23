@@ -34,6 +34,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             "LIMIT ?) " +
             "ORDER BY (SELECT COUNT(*) FROM likes AS fl " +
             "WHERE fl.film_id = f.film_id) DESC;";
+    private static final String CHECK_DUPLICATE_LIKE = "SELECT COUNT(*) FROM likes WHERE film_id = ? AND user_id = ?";
     private static final String FIND_POPULAR_FILMS_WITH_GENRE = "SELECT f.* FROM film f " +
             "LEFT JOIN likes l ON f.film_id = l.film_id " +
             "INNER JOIN genre_film gf ON f.film_id = gf.film_id AND gf.genre_id = ? " +
@@ -181,6 +182,11 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
 
     public boolean addLike(long filmId, long userId) {
+
+        if(isLikeDuplicate(filmId, userId) > 0){
+            update(INSERT_FEED, userId, "LIKE", "ADD", filmId, Timestamp.from(Instant.now()));
+            return false;
+        }
         try {
             int row = jdbcTemplate.update(INSERT_LIKE, filmId, userId);
             if (row > 0) {
@@ -244,9 +250,10 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             return findMany(FIND_POPULAR_FILMS_WITH_GENRE, genreId, count);
         } else if (year != null) {
             return findMany(FIND_POPULAR_FILMS_WITH_YEAR, year, count);
-        } else {
-            return findMany(FIND_POPULAR_FILMS, count);
         }
+        String limitAllFilms = FIND_ALL_FILMS + " LIMIT ?";
+        return findMany(FIND_POPULAR_FILMS, count).isEmpty() ? findMany(limitAllFilms, count) : findMany(FIND_POPULAR_FILMS, count);
+
     }
 
     @Override
@@ -261,5 +268,10 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         List<Film> films = findMany(SEARCH_BY_DIRECTOR, "%" + query + "%");
         films.forEach(this::completeAssemblyFilm);
         return films;
+    }
+
+    private int isLikeDuplicate(long filmId, long userId){
+        Integer result = jdbcTemplate.queryForObject(CHECK_DUPLICATE_LIKE, Integer.class, filmId, userId);
+        return result != null ? result : 0;
     }
 }

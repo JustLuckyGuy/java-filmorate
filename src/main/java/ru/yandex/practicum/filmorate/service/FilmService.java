@@ -79,9 +79,6 @@ public class FilmService {
             throw new ValidationException("Вы не можете запросить фильмы из будущего");
         }
         log.trace("Был произведен вывод популярных фильмов");
-        if (filmDb.popularFilms(count, year, genreId).isEmpty() && year == null && genreId == null) {
-            return getAllFilms();
-        }
         return filmDb.popularFilms(count, year, genreId).stream().map(FilmMapper::maptoFilmDTO).toList();
     }
 
@@ -89,9 +86,6 @@ public class FilmService {
     public FilmDTO setLike(Long idFilm, Long idUser) {
         checkUser(idUser);
         Film film = searchFilm(idFilm);
-        if (film.getLikes().contains(idUser)) {
-            throw new ValidationException("Пользователь с id = " + idUser + "уже поставил лайк");
-        }
         if (filmDb.addLike(idFilm, idUser)) {
             film.getLikes().add(idUser);
         }
@@ -157,7 +151,7 @@ public class FilmService {
             byTitlelist.forEach(f -> filmsMap.put(f.getId(), f));
             byDirectorList.forEach(f -> filmsMap.put(f.getId(), f));
 
-            result = filmsMap.values().stream().map(FilmMapper::maptoFilmDTO).toList();
+            result = filmsMap.values().stream().map(FilmMapper::maptoFilmDTO).toList().reversed();
         }
         return result;
     }

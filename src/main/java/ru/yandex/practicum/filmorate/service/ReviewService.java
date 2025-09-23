@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -66,7 +65,7 @@ public class  ReviewService {
 
         return reviews.stream()
                 .map(ReviewMapper::convertToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public void like(Long reviewId, Long userId) {
