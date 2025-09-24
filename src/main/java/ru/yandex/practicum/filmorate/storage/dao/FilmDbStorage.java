@@ -147,8 +147,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 directorRepository.addRelationship(film.getId(), director.getId());
             }
         }
-        film.getGenres().clear();
-        film.getGenres().addAll(genreRepository.findByIdFilm(film.getId()));
+        completeAssemblyFilm(film);
         return film;
     }
 
