@@ -16,8 +16,7 @@ import java.util.Optional;
 
 @Repository
 public class ReviewDbStorage extends BaseRepository<Review> implements ReviewStorage {
-    private final FilmStorage filmDb;
-    private final UserStorage userStorage;
+
 
     private static final String GET_REVIEW_BY_ID_SQL = "SELECT * FROM reviews WHERE review_id = ?";
     private static final String GET_ALL_REVIEWS_SQL = "SELECT * FROM reviews ORDER BY useful DESC LIMIT ?";
@@ -27,7 +26,10 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     private static final String INSERT_REVIEW = "INSERT INTO reviews(content, is_positive, user_id, film_id, useful,created_at) " +
             "VALUES (?,?,?,?,?,?)";
 
-    public ReviewDbStorage(JdbcTemplate jdbcTemplate, RowMapper<Review> mapper,FilmStorage filmDb,UserStorage userStorage) {
+    private final FilmStorage filmDb;
+    private final UserStorage userStorage;
+
+    public ReviewDbStorage(JdbcTemplate jdbcTemplate, RowMapper<Review> mapper, FilmStorage filmDb, UserStorage userStorage) {
         super(jdbcTemplate, mapper);
         this.filmDb = filmDb;
         this.userStorage = userStorage;
@@ -37,7 +39,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     public Review add(Review review) {
         long id = insert(INSERT_REVIEW,
                 "review_id", review.getContent(), review.getIsPositive(), review.getUserId(),
-                review.getFilmId(), review.getUseful(),review.getCreatedAt());
+                review.getFilmId(), review.getUseful(), review.getCreatedAt());
         review.setReviewId(id);
         getLikesDislikes(review);
         update(INSERT_FEED, review.getUserId(), "REVIEW", "ADD", review.getReviewId(), Timestamp.from(Instant.now()));
@@ -61,7 +63,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
     @Override
     public Review getById(Long id) {
-        Optional<Review> review = findOne(GET_REVIEW_BY_ID_SQL,id);
+        Optional<Review> review = findOne(GET_REVIEW_BY_ID_SQL, id);
         if (review.isEmpty())
             throw new NotFoundException("Такого ревью не существует");
         review.ifPresent(this::getLikesDislikes);
@@ -102,7 +104,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
                 review.getReviewId())));
     }
 
-    private void updateLikesDislikes(Review review) {
+    public void updateLikesDislikes(Review review) {
         String deleteSql = "DELETE FROM review_likes WHERE review_id = ?";
         delete(deleteSql, review.getReviewId());
 
@@ -119,5 +121,6 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
                     update(insertDislikesSql, review.getReviewId(), userId)
             );
         }
+        update("UPDATE reviews SET useful = ? WHERE review_id = ?", review.getUseful(), review.getReviewId());
     }
 }

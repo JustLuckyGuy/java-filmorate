@@ -34,35 +34,21 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String FIND_FRIEND_OF_USER = "SELECT u.* FROM users u " + "JOIN friendship f ON u.user_id = f.friend_id WHERE f.user_id = ? AND f.status_friends = true";
     private static final String FIND_USER_FEED = "SELECT * FROM feed WHERE user_id = ? ORDER BY event_id";
     private static final String FIND_USER_RECOMMENDATIONS = """
-            WITH user_likes AS (
-                SELECT film_id FROM likes WHERE user_id = ?
-            ),
-            other_users_likes AS (
-                SELECT l.user_id, l.film_id
-                FROM likes l
-                WHERE l.user_id != ?
-                AND l.film_id IN (SELECT film_id FROM user_likes)
-                AND l.user_id IS NOT NULL
-            ),
-            similarity_scores AS (
-                SELECT
-                    oul.user_id,
-                    COUNT(*) as common_likes
-                FROM other_users_likes oul
-                GROUP BY oul.user_id
-                HAVING COUNT(*) > 0
-                ORDER BY common_likes DESC
-                LIMIT 1
-            ),
-            recommendations AS (
+             WITH most_similar_user AS (
+                    SELECT l2.user_id
+                    FROM likes l1
+                    JOIN likes l2 ON l1.film_id = l2.film_id
+                    WHERE l1.user_id = ?
+                    AND l2.user_id != ?
+                    AND l2.user_id IS NOT NULL
+                    GROUP BY l2.user_id
+                    ORDER BY COUNT(l2.film_id) DESC
+                    LIMIT 1
+                )
                 SELECT DISTINCT l.film_id
                 FROM likes l
-                INNER JOIN similarity_scores ss ON l.user_id = ss.user_id
-                WHERE l.film_id NOT IN (SELECT film_id FROM user_likes)
-                AND l.film_id IS NOT NULL
-                AND ss.user_id IS NOT NULL
-            )
-            SELECT film_id FROM recommendations
+                WHERE l.user_id IN (SELECT user_id FROM most_similar_user)
+                AND l.film_id NOT IN (SELECT film_id FROM likes WHERE user_id = ?)
             """;
     private static final String CHECK_DUPLICATE_LIKE = "SELECT COUNT(*) FROM friendship WHERE user_id = ? AND friend_id = ?";
 
@@ -148,21 +134,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
 
     @Override
     public List<Long> getRecommendations(Long userId) {
-        try {
-            if (findById(userId).isEmpty() || !userHasLikes(userId)) {
-                return List.of();
-            }
-            return jdbcTemplate.query(FIND_USER_RECOMMENDATIONS,
-                    (rs, rowNum) -> rs.getLong("film_id"), userId, userId);
-        } catch (Exception e) {
-            return List.of();
-        }
-    }
-
-    private boolean userHasLikes(Long userId) {
-        String query = "SELECT COUNT(*) FROM likes WHERE user_id = ?";
-        Integer count = jdbcTemplate.queryForObject(query, Integer.class, userId);
-        return count != null && count > 0;
+        return jdbcTemplate.query(FIND_USER_RECOMMENDATIONS, (rs, rowNum) -> rs.getLong("film_id"), userId, userId, userId);
     }
 
     private int isFriendDuplicate(long filmId, long userId) {

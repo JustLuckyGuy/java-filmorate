@@ -83,7 +83,7 @@ public class  ReviewService {
 
         review.getLikes().add(userId);
         review.setUseful(review.getUseful() + 1);
-        reviewStorage.update(review);
+        reviewStorage.updateLikesDislikes(review);
     }
 
     public void dislike(Long reviewId, Long userId) {
@@ -101,7 +101,7 @@ public class  ReviewService {
 
         review.getDislikes().add(userId);
         review.setUseful(review.getUseful() - 1);
-        reviewStorage.update(review);
+        reviewStorage.updateLikesDislikes(review);
     }
 
     public void removeLike(Long reviewId, Long userId) {
@@ -114,7 +114,7 @@ public class  ReviewService {
 
         review.getLikes().remove(userId);
         review.setUseful(review.getUseful() - 1);
-        reviewStorage.update(review);
+        reviewStorage.updateLikesDislikes(review);
     }
 
     public void removeDislike(Long reviewId, Long userId) {
@@ -127,7 +127,7 @@ public class  ReviewService {
 
         review.getDislikes().remove(userId);
         review.setUseful(review.getUseful() + 1);
-        reviewStorage.update(review);
+        reviewStorage.updateLikesDislikes(review);
     }
 
     private void validateUserAndFilm(Long userId, Long filmId) {
