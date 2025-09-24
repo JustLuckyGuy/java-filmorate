@@ -183,7 +183,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     public boolean addLike(long filmId, long userId) {
 
-        if(isLikeDuplicate(filmId, userId) > 0){
+        if (isLikeDuplicate(filmId, userId) > 0) {
             update(INSERT_FEED, userId, "LIKE", "ADD", filmId, Timestamp.from(Instant.now()));
             return false;
         }
@@ -270,7 +270,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         return films;
     }
 
-    private int isLikeDuplicate(long filmId, long userId){
+    private int isLikeDuplicate(long filmId, long userId) {
         Integer result = jdbcTemplate.queryForObject(CHECK_DUPLICATE_LIKE, Integer.class, filmId, userId);
         return result != null ? result : 0;
     }
