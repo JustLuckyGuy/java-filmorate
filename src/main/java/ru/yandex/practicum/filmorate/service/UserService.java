@@ -88,7 +88,7 @@ public class UserService {
             throw new ValidationException("Вы не можете добавить самого себя в друзья");
         }
 
-        if(userStorage.addFriend(user.getId(), friend.getId())) user.getFriends().add(friend.getId());
+        if (userStorage.addFriend(user.getId(), friend.getId())) user.getFriends().add(friend.getId());
 
         log.trace("Пользователь {} добавил в друзья {}", user.getName(), friend.getName());
         return UserMapper.maptoUserDTO(checkUser(user.getId()));
@@ -129,14 +129,20 @@ public class UserService {
 
     public List<FilmDTO> getRecommendations(Long userId) {
         checkUser(userId);
-        List<Long> recommendedFilmIds = userStorage.getRecommendations(userId);
+        List<Long> filmIds = userStorage.getRecommendations(userId);
+        return filmIds.isEmpty() ? Collections.emptyList() : convertToFilmDTOs(filmIds);
+    }
 
-        return recommendedFilmIds.stream()
-                .map(filmStorage::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(FilmMapper::maptoFilmDTO)
+    private List<FilmDTO> convertToFilmDTOs(List<Long> filmIds) {
+        return filmIds.stream()
+                .map(this::findFilmById)
+                .filter(Objects::nonNull)
                 .toList();
     }
 
+    private FilmDTO findFilmById(Long filmId) {
+        return filmStorage.findById(filmId)
+                .map(FilmMapper::maptoFilmDTO)
+                .orElse(null);
+    }
 }
