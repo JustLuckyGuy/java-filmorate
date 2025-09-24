@@ -11,11 +11,8 @@ import java.util.Optional;
 @Repository
 public class GenreRepository extends BaseRepository<Genre> {
     private static final String FIND_ALL_GENRES = "SELECT * FROM genre";
-    private static final String FIND_ALL_GENRES_ID_FILM =
-            "SELECT g.* FROM genre g " +
-                    "INNER JOIN genre_film gf ON g.genre_id = gf.genre_id " +
-                    "WHERE gf.film_id = ? " +
-                    "ORDER BY g.genre_id DESC";
+    private static final String FIND_ALL_GENRES_ID_FILM = "select * from genre " +
+            "WHERE genre_id IN (SELECT genre_id from genre_film WHERE film_id = ?) ORDER BY genre_id";
     private static final String FIND_GENRE_BY_ID = "SELECT * FROM genre WHERE genre_id = ?";
     private static final String INSERT_GENRE = "INSERT INTO genre (name) VALUES (?)";
     private static final String UPDATE_GENRE = "UPDATE genre SET name = ? WHERE genre_id = ? ";
