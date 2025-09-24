@@ -40,7 +40,9 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
             other_users_likes AS (
                 SELECT l.user_id, l.film_id
                 FROM likes l
-                WHERE l.user_id != ? AND l.film_id IN (SELECT film_id FROM user_likes)
+                WHERE l.user_id != ?
+                AND l.film_id IN (SELECT film_id FROM user_likes)
+                AND l.user_id IS NOT NULL
             ),
             similarity_scores AS (
                 SELECT
@@ -48,14 +50,17 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                     COUNT(*) as common_likes
                 FROM other_users_likes oul
                 GROUP BY oul.user_id
+                HAVING COUNT(*) > 0
                 ORDER BY common_likes DESC
                 LIMIT 1
             ),
             recommendations AS (
                 SELECT DISTINCT l.film_id
                 FROM likes l
-                JOIN similarity_scores ss ON l.user_id = ss.user_id
+                INNER JOIN similarity_scores ss ON l.user_id = ss.user_id
                 WHERE l.film_id NOT IN (SELECT film_id FROM user_likes)
+                AND l.film_id IS NOT NULL
+                AND ss.user_id IS NOT NULL
             )
             SELECT film_id FROM recommendations
             """;
@@ -102,7 +107,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
 
     @Override
     public boolean addFriend(long userId, long friendId) {
-        if(isFriendDuplicate(userId, friendId)>0){
+        if (isFriendDuplicate(userId, friendId) > 0) {
             update(INSERT_FEED, userId, "FRIEND", "ADD", friendId, Timestamp.from(Instant.now()));
             return false;
         }
@@ -143,10 +148,24 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
 
     @Override
     public List<Long> getRecommendations(Long userId) {
-        return jdbcTemplate.query(FIND_USER_RECOMMENDATIONS, (rs, rowNum) -> rs.getLong("film_id"), userId, userId);
+        try {
+            if (findById(userId).isEmpty() || !userHasLikes(userId)) {
+                return List.of();
+            }
+            return jdbcTemplate.query(FIND_USER_RECOMMENDATIONS,
+                    (rs, rowNum) -> rs.getLong("film_id"), userId, userId);
+        } catch (Exception e) {
+            return List.of();
+        }
     }
 
-    private int isFriendDuplicate(long filmId, long userId){
+    private boolean userHasLikes(Long userId) {
+        String query = "SELECT COUNT(*) FROM likes WHERE user_id = ?";
+        Integer count = jdbcTemplate.queryForObject(query, Integer.class, userId);
+        return count != null && count > 0;
+    }
+
+    private int isFriendDuplicate(long filmId, long userId) {
         Integer result = jdbcTemplate.queryForObject(CHECK_DUPLICATE_LIKE, Integer.class, filmId, userId);
         return result != null ? result : 0;
     }

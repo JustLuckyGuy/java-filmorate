@@ -42,7 +42,7 @@ public class GenreRepository extends BaseRepository<Genre> {
     }
 
     public boolean deleteRelationship(long filmId) {
-        return  delete(DELETE_RELATIONSHIP, filmId);
+        return delete(DELETE_RELATIONSHIP, filmId);
     }
 
     public Genre save(Genre genre) {
