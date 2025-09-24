@@ -18,4 +18,6 @@ public interface ReviewStorage {
     void delete(Long id);
 
     void getLikesDislikes(Review review);
+
+    void updateLikesDislikes(Review review);
 }
