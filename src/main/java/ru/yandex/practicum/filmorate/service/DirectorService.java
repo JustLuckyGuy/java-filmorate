@@ -43,7 +43,4 @@ public class DirectorService {
         return directorRepository.delete(directorId);
     }
 
-    public boolean deleteRelations(long filmId) {
-        return directorRepository.deleteRelationship(filmId);
-    }
 }

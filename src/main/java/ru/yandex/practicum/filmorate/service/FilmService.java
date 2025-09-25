@@ -104,6 +104,8 @@ public class FilmService {
     }
 
     public List<FilmDTO> findCommonFilms(Long userId, Long friendId) {
+        checkUser(userId);
+        checkUser(friendId);
         return filmDb.findCommonFilms(userId, friendId).stream().map(FilmMapper::maptoFilmDTO).toList();
     }
 

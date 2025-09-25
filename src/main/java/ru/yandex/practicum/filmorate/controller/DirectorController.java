@@ -40,8 +40,4 @@ public class DirectorController {
         return directorService.delete(directorId);
     }
 
-    @DeleteMapping("/film/{filmId}")
-    public boolean deleteRelations(@PathVariable @NotNull @Positive long filmId) {
-        return directorService.deleteRelations(filmId);
-    }
 }

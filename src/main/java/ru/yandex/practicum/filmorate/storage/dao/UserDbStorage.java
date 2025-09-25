@@ -43,7 +43,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                     AND l2.user_id IS NOT NULL
                     GROUP BY l2.user_id
                     ORDER BY COUNT(l2.film_id) DESC
-                    LIMIT 1
+                    LIMIT 10
                 )
                 SELECT DISTINCT l.film_id
                 FROM likes l

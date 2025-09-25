@@ -5,9 +5,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -26,13 +24,9 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     private static final String INSERT_REVIEW = "INSERT INTO reviews(content, is_positive, user_id, film_id, useful,created_at) " +
             "VALUES (?,?,?,?,?,?)";
 
-    private final FilmStorage filmDb;
-    private final UserStorage userStorage;
 
-    public ReviewDbStorage(JdbcTemplate jdbcTemplate, RowMapper<Review> mapper, FilmStorage filmDb, UserStorage userStorage) {
+    public ReviewDbStorage(JdbcTemplate jdbcTemplate, RowMapper<Review> mapper) {
         super(jdbcTemplate, mapper);
-        this.filmDb = filmDb;
-        this.userStorage = userStorage;
     }
 
     @Override

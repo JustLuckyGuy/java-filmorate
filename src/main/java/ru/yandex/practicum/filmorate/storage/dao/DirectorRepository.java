@@ -40,9 +40,8 @@ public class DirectorRepository extends BaseRepository<Director> {
         insert(INSERT_RELATIONSHIP, "film_id", filmId, directorId);
     }
 
-    public boolean deleteRelationship(long filmId) {
+    public void deleteRelationship(long filmId) {
         delete(DELETE_RELATIONSHIP, filmId);
-        return false;
     }
 
     public Director save(Director director) {
