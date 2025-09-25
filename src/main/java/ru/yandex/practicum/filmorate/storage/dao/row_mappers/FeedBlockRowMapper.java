@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.storage.dao.row_mappers;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.FeedBlock;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,8 +18,8 @@ public class FeedBlockRowMapper implements RowMapper<FeedBlock> {
         FeedBlock block = new FeedBlock();
         block.setEventId(rs.getLong("event_id"));
         block.setUserId(rs.getLong("user_id"));
-        block.setEventType(rs.getString("event_type"));
-        block.setOperation(rs.getString("operation"));
+        block.setEventType(EventType.from(rs.getString("event_type")));
+        block.setOperation(Operation.from(rs.getString("operation")));
         block.setEntityId(rs.getLong("entity_id"));
         Timestamp timestamp = rs.getTimestamp("created_at");
         block.setTimestamp(timestamp.toInstant().toEpochMilli());

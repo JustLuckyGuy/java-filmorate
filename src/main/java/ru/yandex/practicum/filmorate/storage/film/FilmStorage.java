@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.SortOrder;
+import ru.yandex.practicum.filmorate.model.enums.SortOrder;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,4 +32,6 @@ public interface FilmStorage {
     List<Film> searchByTitle(String query);
 
     List<Film> searchByDirector(String query);
+
+    List<Film> searchByTitleAndByDirector(String query);
 }

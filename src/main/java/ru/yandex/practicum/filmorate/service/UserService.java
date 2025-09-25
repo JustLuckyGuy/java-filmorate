@@ -130,7 +130,7 @@ public class UserService {
     public List<FilmDTO> getRecommendations(Long userId) {
         checkUser(userId);
         List<Long> filmIds = userStorage.getRecommendations(userId);
-        return filmIds.isEmpty() ? Collections.emptyList() : convertToFilmDTOs(filmIds);
+        return convertToFilmDTOs(filmIds);
     }
 
     private List<FilmDTO> convertToFilmDTOs(List<Long> filmIds) {

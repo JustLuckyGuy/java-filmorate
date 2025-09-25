@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.enums.SortOrder;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.sql.Timestamp;
@@ -82,6 +83,14 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String SEARCH_BY_DIRECTOR = "SELECT f.*, m.mpa_id as mpa_id, m.code as mpa_name FROM film f " +
             "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id LEFT JOIN director_film fd ON f.film_id = fd.film_id " +
             "LEFT JOIN directors d ON fd.director_id = d.director_id WHERE LOWER(d.name) LIKE ?";
+    private static final String SEARCH_BY_TITLE_AND_DIRECTOR =
+            "SELECT DISTINCT f.*, m.mpa_id as mpa_id, m.code as mpa_name " +
+                    "FROM film f " +
+                    "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id " +
+                    "LEFT JOIN director_film fd ON f.film_id = fd.film_id " +
+                    "LEFT JOIN directors d ON fd.director_id = d.director_id " +
+                    "WHERE LOWER(f.name) LIKE ? OR LOWER(d.name) LIKE ? " +
+                    "ORDER BY f.film_id DESC";
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate, RowMapper<Film> mapper, GenreRepository genreRepository, MpaRepository mpaRepository, DirectorRepository directorRepository) {
         super(jdbcTemplate, mapper);
@@ -269,6 +278,14 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         films.forEach(this::completeAssemblyFilm);
         return films;
     }
+
+    @Override
+    public List<Film> searchByTitleAndByDirector(String query) {
+        List<Film> films = findMany(SEARCH_BY_TITLE_AND_DIRECTOR, "%" + query + "%", "%" + query + "%");
+        films.forEach(this::completeAssemblyFilm);
+        return films;
+    }
+
 
     private int isLikeDuplicate(long filmId, long userId) {
         Integer result = jdbcTemplate.queryForObject(CHECK_DUPLICATE_LIKE, Integer.class, filmId, userId);

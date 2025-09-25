@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -69,64 +70,58 @@ public class  ReviewService {
     }
 
     public void like(Long reviewId, Long userId) {
-        Review review = reviewStorage.getById(reviewId);
-        userStorage.findById(userId);
-
-        if (review.getLikes().contains(userId)) {
-            throw new ValidationException("Пользователь уже поставил лайк");
-        }
-
-        if (review.getDislikes().contains(userId)) {
-            review.getDislikes().remove(userId);
-            review.setUseful(review.getUseful() + 1);
-        }
-
-        review.getLikes().add(userId);
-        review.setUseful(review.getUseful() + 1);
-        reviewStorage.updateLikesDislikes(review);
+        processReaction(reviewId, userId, true);
     }
 
     public void dislike(Long reviewId, Long userId) {
-        Review review = reviewStorage.getById(reviewId);
-        userStorage.findById(userId);
-
-        if (review.getDislikes().contains(userId)) {
-            throw new ValidationException("Пользователь уже поставил дизлайк");
-        }
-
-        if (review.getLikes().contains(userId)) {
-            review.getLikes().remove(userId);
-            review.setUseful(review.getUseful() - 1);
-        }
-
-        review.getDislikes().add(userId);
-        review.setUseful(review.getUseful() - 1);
-        reviewStorage.updateLikesDislikes(review);
+        processReaction(reviewId, userId, false);
     }
 
     public void removeLike(Long reviewId, Long userId) {
-        Review review = reviewStorage.getById(reviewId);
-        userStorage.findById(userId);
-
-        if (!review.getLikes().contains(userId)) {
-            throw new NotFoundException("Лайк не найден");
-        }
-
-        review.getLikes().remove(userId);
-        review.setUseful(review.getUseful() - 1);
-        reviewStorage.updateLikesDislikes(review);
+        removeReaction(reviewId, userId, true);
     }
 
     public void removeDislike(Long reviewId, Long userId) {
+        removeReaction(reviewId, userId, false);
+    }
+
+    private void processReaction(Long reviewId, Long userId, boolean isLike) {
         Review review = reviewStorage.getById(reviewId);
         userStorage.findById(userId);
 
-        if (!review.getDislikes().contains(userId)) {
-            throw new NotFoundException("Дизлайк не найден");
+        Set<Long> targetReactions = isLike ? review.getLikes() : review.getDislikes();
+        Set<Long> oppositeReactions = isLike ? review.getDislikes() : review.getLikes();
+        String errorMessage = isLike ? "Пользователь уже поставил лайк" : "Пользователь уже поставил дизлайк";
+        int usefulChange = isLike ? 1 : -1;
+
+        if (targetReactions.contains(userId)) {
+            throw new ValidationException(errorMessage);
         }
 
-        review.getDislikes().remove(userId);
-        review.setUseful(review.getUseful() + 1);
+        if (oppositeReactions.contains(userId)) {
+            oppositeReactions.remove(userId);
+            review.setUseful(review.getUseful() + usefulChange);
+        }
+
+        targetReactions.add(userId);
+        review.setUseful(review.getUseful() + usefulChange);
+        reviewStorage.updateLikesDislikes(review);
+    }
+
+    private void removeReaction(Long reviewId, Long userId, boolean isLike) {
+        Review review = reviewStorage.getById(reviewId);
+        userStorage.findById(userId);
+
+        Set<Long> targetReactions = isLike ? review.getLikes() : review.getDislikes();
+        String errorMessage = isLike ? "Лайк не найден" : "Дизлайк не найден";
+        int usefulChange = isLike ? -1 : 1;
+
+        if (!targetReactions.contains(userId)) {
+            throw new NotFoundException(errorMessage);
+        }
+
+        targetReactions.remove(userId);
+        review.setUseful(review.getUseful() + usefulChange);
         reviewStorage.updateLikesDislikes(review);
     }
 
