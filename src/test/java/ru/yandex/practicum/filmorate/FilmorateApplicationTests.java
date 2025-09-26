@@ -210,9 +210,9 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void getUserFriendsShouldReturn500Status() throws Exception {
+    void getUserFriendsShouldReturn404Status() throws Exception {
         mockMvc.perform(get("/users/friends"))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().is4xxClientError());
     }
 
     @Test
@@ -225,9 +225,9 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void getCommonFriendsShouldReturn500Status() throws Exception {
+    void getCommonFriendsShouldReturn404Status() throws Exception {
         mockMvc.perform(get("/users/null/friends/common/2"))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().is4xxClientError());
     }
 
 
@@ -247,9 +247,9 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void addFriendShouldReturn500Status() throws Exception {
+    void addFriendShouldReturn404Status() throws Exception {
         mockMvc.perform(put("/users/null/friends/2"))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().is4xxClientError());
 
     }
 
@@ -270,9 +270,9 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void removeFriendShouldReturn500Status() throws Exception {
+    void removeFriendShouldReturn404Status() throws Exception {
         mockMvc.perform(delete("/users/null/friends/2"))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().is4xxClientError());
     }
 
 }

@@ -1,13 +1,13 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class Genre {
+public class Director {
     private Long id;
     @NotBlank(message = "Поле должно быть заполнено")
-    @NotNull(message = "Заполните поле")
+    @Size(max = 256, message = "Превышен лимит символов")
     private String name;
 }

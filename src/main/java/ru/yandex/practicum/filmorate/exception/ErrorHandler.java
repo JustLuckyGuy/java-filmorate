@@ -40,7 +40,7 @@ public class ErrorHandler {
 
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleException(final Exception e) {
         log.error("Возникла ошибка! {}", e.getMessage());
         return Map.of(ERROR, e.getMessage());
@@ -50,6 +50,13 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleDataAccessException(final DataIntegrityViolationException e) {
         log.error("Пользователь пытался добавить в друзья дважды {}", e.getMessage());
+        return Map.of(ERROR, e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleDataAccessException(final DuplicateDataException e) {
+        log.error("Пользователь дублирует данные {}", e.getMessage());
         return Map.of(ERROR, e.getMessage());
     }
 
